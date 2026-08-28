@@ -9,8 +9,8 @@
         :root {
             --bg-deep: #05020a;
             --bg-gradient: radial-gradient(circle at 50% 12%, #1e0b2e 0%, #0a0314 55%, #030108 100%);
-            --glass-bg: rgba(18, 8, 28, 0.65);
-            --glass-border: rgba(255, 182, 193, 0.18);
+            --glass-bg: rgba(18, 8, 28, 0.75);
+            --glass-border: rgba(255, 182, 193, 0.22);
             --glass-border-hover: rgba(255, 182, 193, 0.45);
             --primary-pink: #ff6b8b;
             --accent-gold: #ffd700;
@@ -39,7 +39,7 @@
             transition: background-color 1s ease;
         }
 
-        /* Cinematic vignette for a polished, professional depth */
+        /* Cinematic vignette */
         .vignette-overlay {
             position: fixed;
             inset: 0;
@@ -48,7 +48,7 @@
             z-index: 1;
         }
 
-        /* Ambient background bokeh particles */
+        /* Ambient background particles */
         .ambient-particle {
             position: absolute;
             background: radial-gradient(circle, rgba(255,220,240,0.85) 0%, rgba(255,160,200,0.12) 70%, transparent 100%);
@@ -65,7 +65,7 @@
             100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
         }
 
-        /* Fireflies for enchanted depth */
+        /* Fireflies */
         .firefly {
             position: absolute;
             width: 4px;
@@ -83,53 +83,56 @@
             100% { transform: translate(var(--dx), var(--dy)); opacity: 0.1; }
         }
 
-        /* Executive Cinematic Header — compact, always fits on screen */
-        .header-card {
+        /* Header Bar Top Fixed */
+        .top-header-bar {
             position: fixed;
             top: max(10px, env(safe-area-inset-top));
-            left: 50%;
-            transform: translateX(-50%);
+            left: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 90;
+        }
+
+        .header-card {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            padding: 10px 22px;
+            padding: 8px 18px;
             border-radius: 20px;
-            text-align: center;
+            text-align: left;
             color: var(--text-main);
             font-family: 'Cinzel', serif;
-            font-size: clamp(10.5px, 3.2vw, 13px);
+            font-size: clamp(10px, 3.2vw, 13px);
             font-weight: 600;
             letter-spacing: 1.2px;
-            line-height: 1.55;
-            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.55);
-            pointer-events: none;
-            z-index: 20;
-            max-width: min(92vw, 420px);
-            white-space: normal;
-            animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            line-height: 1.3;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+            max-width: calc(100% - 60px);
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .header-card .main-line {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
+            gap: 6px;
             white-space: nowrap;
         }
 
         .header-card .sub-line {
             display: block;
-            margin-top: 3px;
-            font-size: 0.78em;
+            margin-top: 2px;
+            font-size: 0.76em;
             letter-spacing: 0.8px;
             color: var(--text-muted);
             font-weight: 500;
         }
 
         @keyframes slideDown {
-            0% { transform: translate(-50%, -40px); opacity: 0; }
-            100% { transform: translate(-50%, 0); opacity: 1; }
+            0% { transform: translateY(-30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
         .header-card span.heart {
@@ -144,75 +147,120 @@
             50% { transform: scale(1.3); }
         }
 
-        /* Professional Control Dock — never clips, scrolls internally if needed */
-        .controls-footer {
-            position: fixed;
-            bottom: max(14px, env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%);
+        /* Menu Trigger Button in Header Right */
+        .menu-trigger-btn {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            padding: 8px 10px;
-            border-radius: 24px;
-            display: flex;
-            gap: 6px;
-            z-index: 20;
-            max-width: 94vw;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.6);
-            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .controls-footer::-webkit-scrollbar { display: none; }
-
-        @keyframes slideUp {
-            0% { transform: translate(-50%, 50px); opacity: 0; }
-            100% { transform: translate(-50%, 0); opacity: 1; }
-        }
-
-        .control-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
             color: var(--text-main);
-            padding: 8px 13px;
+            width: 44px;
+            height: 44px;
             border-radius: 16px;
-            cursor: pointer;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: clamp(10px, 2.6vw, 13px);
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+            font-size: 20px;
+            transition: all 0.3s ease;
         }
 
-        .control-btn:hover {
+        .menu-trigger-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Header Right Top Menu Overlay - Screenshot Style */
+        .top-menu-dropdown {
+            position: fixed;
+            top: max(10px, env(safe-area-inset-top));
+            right: 12px;
+            width: 250px;
+            background: rgba(15, 6, 24, 0.94);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 182, 193, 0.28);
+            border-radius: 22px;
+            padding: 16px 14px 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .top-menu-dropdown.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
+        .menu-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .menu-title {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            letter-spacing: 1.5px;
+            color: var(--primary-pink);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .menu-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 6px;
+            line-height: 1;
+        }
+
+        .menu-item-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+            width: 100%;
+            transition: all 0.25s ease;
+        }
+
+        .menu-item-btn:hover, .menu-item-btn:active {
             background: rgba(255, 107, 139, 0.2);
             border-color: rgba(255, 107, 139, 0.5);
             color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 139, 0.3);
+            transform: translateX(-2px);
         }
 
-        .control-btn:active {
-            transform: translateY(0);
+        .menu-item-btn.accent {
+            background: linear-gradient(135deg, rgba(255,107,139,0.2), rgba(255,215,0,0.1));
+            border-color: rgba(255, 182, 193, 0.35);
         }
 
-        .control-btn.accent {
-            background: linear-gradient(135deg, rgba(255,107,139,0.28), rgba(255,215,0,0.14));
-            border-color: rgba(255, 182, 193, 0.4);
-        }
-
-        .control-btn.gold {
-            background: linear-gradient(135deg, rgba(255,215,0,0.22), rgba(255,107,139,0.12));
-            border-color: rgba(255, 215, 0, 0.4);
+        .menu-item-btn.gold {
+            background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,107,139,0.1));
+            border-color: rgba(255, 215, 0, 0.35);
         }
 
         /* Botanical Element Styling */
@@ -262,7 +310,7 @@
             100% { transform: translate(var(--tx), var(--ty)) scale(1.15); opacity: 0; }
         }
 
-        /* Dreamy sleep bubble — rises from every flower tap */
+        /* Dreamy sleep bubble */
         .dream-bubble {
             position: absolute;
             pointer-events: none;
@@ -279,7 +327,7 @@
             100% { transform: translate(-50%, -160%) scale(1.2); opacity: 0; }
         }
 
-        /* Confetti burst for the Celebrate feature */
+        /* Confetti burst */
         .confetti-piece {
             position: fixed;
             top: -40px;
@@ -294,7 +342,7 @@
             100% { transform: translateY(112vh) rotate(360deg); opacity: 0.85; }
         }
 
-        /* Realistic Butterfly Animation Engine with Dual-Layer Wings */
+        /* Realistic Butterfly Animation Engine */
         .butterfly-container {
             position: absolute;
             width: 56px;
@@ -358,7 +406,7 @@
             animation-duration: 0.38s; 
         }
 
-        /* Sleepy bubble that appears above the butterfly while it rests and drinks */
+        /* Sleepy bubble */
         .rest-bubble {
             position: absolute;
             left: 50%;
@@ -406,19 +454,19 @@
             100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
         }
 
-        /* Interactive Modal Info Overlay */
+        /* Toast Modal */
         .info-modal {
             position: fixed;
-            top: max(70px, calc(env(safe-area-inset-top) + 64px));
+            top: max(68px, calc(env(safe-area-inset-top) + 60px));
             left: 50%;
             transform: translateX(-50%) translateY(-20px);
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border-hover);
-            padding: 10px 22px;
-            border-radius: 20px;
+            padding: 8px 18px;
+            border-radius: 18px;
             color: #ffd1dc;
-            font-size: 12.5px;
+            font-size: 12px;
             letter-spacing: 0.5px;
             z-index: 25;
             opacity: 0;
@@ -435,7 +483,7 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* Love note overlay — a personal touch, dedicated to Rahima */
+        /* Love note overlay */
         .love-overlay {
             position: fixed;
             inset: 0;
@@ -445,7 +493,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            z-index: 120;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.45s ease;
@@ -514,10 +562,120 @@
             transform: translateY(-2px);
         }
 
-        @media (max-width: 380px) {
-            .header-card { padding: 8px 16px; border-radius: 16px; }
-            .control-btn { padding: 7px 10px; }
-            .controls-footer { padding: 7px 8px; gap: 5px; }
+        /* Password / Auth Modal Overlay */
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            padding: 24px;
+        }
+
+        .auth-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .auth-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border-hover);
+            border-radius: 26px;
+            padding: 30px 24px 24px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.8);
+            transform: translateY(14px) scale(0.96);
+            transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .auth-overlay.show .auth-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .auth-card .auth-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .auth-card h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--primary-pink);
+            margin: 0 0 16px;
+            font-size: 17px;
+            letter-spacing: 1px;
+        }
+
+        .auth-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s ease;
+            margin-bottom: 14px;
+        }
+
+        .auth-input:focus {
+            border-color: var(--primary-pink);
+        }
+
+        .auth-checkbox-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .auth-checkbox-row input {
+            accent-color: var(--primary-pink);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, var(--primary-pink), #ffb3c6);
+            border: none;
+            color: #2a0410;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding: 10px 28px;
+            border-radius: 20px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+            width: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .auth-btn:active {
+            transform: scale(0.96);
+        }
+
+        .auth-error {
+            color: #ff8fa3;
+            font-size: 12px;
+            margin-top: 10px;
+            min-height: 16px;
         }
     </style>
 </head>
@@ -525,21 +683,45 @@
 
     <div class="vignette-overlay"></div>
 
-    <div class="header-card">
-        <div class="main-line"><span class="heart">❤</span> Dedicated to Rahima <span class="heart">❤</span></div>
-        <span class="sub-line">Zaina's Mommy · My Beloved Wife</span>
+    <!-- Header Section -->
+    <div class="top-header-bar">
+        <div class="header-card">
+            <div class="main-line"><span class="heart">❤</span> Dedicated to Rahima <span class="heart">❤</span></div>
+            <span class="sub-line">Zaina's Mommy · My Beloved Wife</span>
+        </div>
+        <button class="menu-trigger-btn" id="menuToggleBtn">☰</button>
+    </div>
+
+    <!-- Right Side Option Menu Dropdown (Screenshot Style) -->
+    <div class="top-menu-dropdown" id="topMenuDropdown">
+        <div class="menu-header-row">
+            <span class="menu-title">Garden Menu</span>
+            <button class="menu-close-btn" id="closeMenuBtn">✕</button>
+        </div>
+        <button class="menu-item-btn gold" id="changeWord">🔤 Change Word</button>
+        <button class="menu-item-btn" id="toggleTheme">✨ Atmosphere</button>
+        <button class="menu-item-btn" id="speedUp">⚡ Flight Speed</button>
+        <button class="menu-item-btn" id="shuffleFlowers">🌸 Refresh Flora</button>
+        <button class="menu-item-btn accent" id="loveNote">💌 For You</button>
+        <button class="menu-item-btn accent" id="celebrateBtn">🎉 Celebrate</button>
+        <button class="menu-item-btn accent" id="logoutBtn">🔒 Logout</button>
+    </div>
+
+    <!-- Password Prompt Modal -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <span class="auth-icon">🔐</span>
+            <h3>Protected Garden</h3>
+            <input type="password" id="authPasswordInput" class="auth-input" placeholder="Enter Password" autocomplete="current-password">
+            <label class="auth-checkbox-row">
+                <input type="checkbox" id="rememberMeCheckbox" checked> Remember Me
+            </label>
+            <button class="auth-btn" id="authSubmitBtn">Unlock Garden</button>
+            <div class="auth-error" id="authErrorMsg"></div>
+        </div>
     </div>
 
     <div class="info-modal" id="infoModal">✨ WELCOME ✨</div>
-
-    <div class="controls-footer">
-        <button class="control-btn gold" id="changeWord">🔤 Change Word</button>
-        <button class="control-btn" id="toggleTheme">✨ Atmosphere</button>
-        <button class="control-btn" id="speedUp">⚡ Flight Speed</button>
-        <button class="control-btn" id="shuffleFlowers">🌸 Refresh Flora</button>
-        <button class="control-btn accent" id="loveNote">💌 For You</button>
-        <button class="control-btn accent" id="celebrateBtn">🎉 Celebrate</button>
-    </div>
 
     <div class="butterfly-container" id="butterfly">
         <div class="rest-bubble">💤</div>
@@ -560,7 +742,7 @@
     </div>
 
     <script>
-        // High-density ambient background particles
+        // Ambient background particles
         for (let i = 0; i < 40; i++) {
             const particle = document.createElement('div');
             particle.className = 'ambient-particle';
@@ -573,7 +755,7 @@
             document.body.appendChild(particle);
         }
 
-        // Glowing fireflies
+        // Fireflies
         for (let i = 0; i < 18; i++) {
             const firefly = document.createElement('div');
             firefly.className = 'firefly';
@@ -589,23 +771,16 @@
         const butterfly = document.getElementById('butterfly');
         const flowersPool = ['🌻', '🌹', '🌺', '🌼', '🌷', '🌸', '💐', '🪷'];
 
-        // Precise double-line matrix coordinates forming the letter 'R' (hand-tuned curve)
+        // 'R' Letter Matrix
         const perfectRGrid = [
-            // --- LEFT STEM (DOUBLE LINE) ---
             {x: 20, y: 15, delay: 0.0}, {x: 20, y: 22, delay: 0.04}, {x: 20, y: 29, delay: 0.08}, {x: 20, y: 36, delay: 0.12}, {x: 20, y: 43, delay: 0.16}, {x: 20, y: 50, delay: 0.20}, {x: 20, y: 57, delay: 0.24}, {x: 20, y: 64, delay: 0.28}, {x: 20, y: 71, delay: 0.32}, {x: 20, y: 78, delay: 0.36}, {x: 20, y: 85, delay: 0.40},
             {x: 27, y: 15, delay: 0.02}, {x: 27, y: 22, delay: 0.06}, {x: 27, y: 29, delay: 0.10}, {x: 27, y: 36, delay: 0.14}, {x: 27, y: 43, delay: 0.18}, {x: 27, y: 50, delay: 0.22}, {x: 27, y: 57, delay: 0.26}, {x: 27, y: 64, delay: 0.30}, {x: 27, y: 71, delay: 0.34}, {x: 27, y: 78, delay: 0.38}, {x: 27, y: 85, delay: 0.42},
-
-            // --- TOP LOOP / CURVE (DOUBLE LINE) ---
             {x: 35, y: 13, delay: 0.46}, {x: 44, y: 12, delay: 0.50}, {x: 54, y: 12, delay: 0.54}, {x: 64, y: 14, delay: 0.58}, {x: 74, y: 20, delay: 0.62}, {x: 79, y: 28, delay: 0.66}, {x: 77, y: 38, delay: 0.70}, {x: 70, y: 46, delay: 0.74}, {x: 58, y: 50, delay: 0.78}, {x: 45, y: 50, delay: 0.82}, {x: 35, y: 50, delay: 0.86},
             {x: 35, y: 20, delay: 0.48}, {x: 44, y: 19, delay: 0.52}, {x: 54, y: 19, delay: 0.56}, {x: 62, y: 22, delay: 0.60}, {x: 69, y: 28, delay: 0.64}, {x: 71, y: 36, delay: 0.68}, {x: 66, y: 42, delay: 0.72}, {x: 56, y: 45, delay: 0.76}, {x: 45, y: 45, delay: 0.80}, {x: 35, y: 45, delay: 0.84},
-
-            // --- DIAGONAL LEG (DOUBLE LINE) ---
             {x: 38, y: 56, delay: 0.90}, {x: 45, y: 62, delay: 0.94}, {x: 53, y: 68, delay: 0.98}, {x: 61, y: 74, delay: 1.02}, {x: 69, y: 80, delay: 1.06}, {x: 77, y: 86, delay: 1.10},
             {x: 42, y: 54, delay: 0.92}, {x: 49, y: 60, delay: 0.96}, {x: 57, y: 66, delay: 1.00}, {x: 65, y: 72, delay: 1.04}, {x: 73, y: 78, delay: 1.08}, {x: 81, y: 84, delay: 1.12}
         ];
 
-        // Generic double-line letter builder, used for A / H / I / M so every
-        // letter of "RAHIMA" matches the same hand-drawn, double-stroke style as R.
         function buildSegmentPoints(x1, y1, x2, y2, spacing, offset) {
             spacing = spacing || 7;
             offset = offset || 7;
@@ -661,7 +836,6 @@
             ])
         };
 
-        // The word this garden spells, letter by letter, on each "Change Word" click
         const wordLetters = ['R', 'A', 'H', 'I', 'M', 'A'];
         let wordIndex = 0;
 
@@ -671,17 +845,14 @@
         
         let flightTimeout = null;
         let drinkTimeout = null;
-        let flightDuration = 1.5; // Optimized smooth flight duration
+        let flightDuration = 1.5;
 
-        // Safe bounds so every flower always fits on screen, under the
-        // header and above the footer, regardless of device width.
         const isCompact = window.innerWidth < 480;
         const FLOWER_MARGIN = isCompact ? 22 : 30;
-        const TOP_SAFE = isCompact ? 92 : 112;
-        const BOTTOM_SAFE = isCompact ? 78 : 92;
+        const TOP_SAFE = isCompact ? 85 : 100;
+        const BOTTOM_SAFE = isCompact ? 35 : 45;
 
         function renderLetterGrid(letterChar) {
-            // clear any existing flowers
             flowerPositions.forEach(f => f.element.remove());
             flowerPositions.length = 0;
 
@@ -746,7 +917,6 @@
             currentX = parseFloat(currentComputedStyle.left);
             currentY = parseFloat(currentComputedStyle.top);
 
-            // Realistic multi-droplet nectar splash animation
             const splashContainer = document.createElement('div');
             splashContainer.className = 'juice-splash';
             splashContainer.style.left = targetPoint.x + 'px';
@@ -775,7 +945,6 @@
             document.body.appendChild(splashContainer);
             setTimeout(() => splashContainer.remove(), 900);
 
-            // Dreamy sleep bubble rising from the tapped flower
             spawnDreamBubble(targetPoint.x, targetPoint.y);
 
             targetPoint.element.style.transform = 'translate(-50%, -50%) scale(1.5)';
@@ -825,7 +994,33 @@
             startFlight(randomFlower);
         }
 
-        // Professional Control Dock Functionality
+        // Header Menu Dropdown Logic
+        const topMenuDropdown = document.getElementById('topMenuDropdown');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+        function toggleDropdownMenu() {
+            topMenuDropdown.classList.toggle('open');
+        }
+
+        function closeDropdownMenu() {
+            topMenuDropdown.classList.remove('open');
+        }
+
+        menuToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdownMenu();
+        });
+
+        closeMenuBtn.addEventListener('click', closeDropdownMenu);
+
+        document.addEventListener('click', (e) => {
+            if (!topMenuDropdown.contains(e.target) && !menuToggleBtn.contains(e.target)) {
+                closeDropdownMenu();
+            }
+        });
+
+        // Theme Switcher
         let themeIndex = 0;
         const themes = [
             { name: 'Midnight Rose', deep: '#05020a', gradient: 'radial-gradient(circle at 50% 12%, #1e0b2e 0%, #0a0314 55%, #030108 100%)' },
@@ -833,13 +1028,7 @@
             { name: 'Crimson Velvet', deep: '#0a0204', gradient: 'radial-gradient(circle at 50% 12%, #2b0c13 0%, #120306 55%, #050102 100%)' },
             { name: 'Emerald Prestige', deep: '#020a06', gradient: 'radial-gradient(circle at 50% 12%, #0c2b1c 0%, #04120c 55%, #010805 100%)' },
             { name: 'Onyx & Gold', deep: '#060503', gradient: 'radial-gradient(circle at 50% 12%, #2b2410 0%, #120f06 55%, #050402 100%)' },
-            { name: 'Royal Amethyst', deep: '#08020e', gradient: 'radial-gradient(circle at 50% 12%, #2a0d3f 0%, #12051c 55%, #050208 100%)' },
-            { name: 'Champagne Rosé', deep: '#0c0608', gradient: 'radial-gradient(circle at 50% 12%, #3a1a22 0%, #170a0e 55%, #060304 100%)' },
-            { name: 'Rose Gold Elegance', deep: '#0c0709', gradient: 'radial-gradient(circle at 50% 12%, #3d1f22 0%, #180d0f 55%, #070404 100%)' },
-            { name: 'Ocean Teal', deep: '#01080a', gradient: 'radial-gradient(circle at 50% 12%, #073b3f 0%, #031a1c 55%, #010a0b 100%)' },
-            { name: 'Charcoal Platinum', deep: '#08090a', gradient: 'radial-gradient(circle at 50% 12%, #2c2f33 0%, #131416 55%, #050506 100%)' },
-            { name: 'Deep Plum', deep: '#08030a', gradient: 'radial-gradient(circle at 50% 12%, #331245 0%, #17081e 55%, #06030a 100%)' },
-            { name: 'Golden Amber', deep: '#0a0602', gradient: 'radial-gradient(circle at 50% 12%, #4a2d0a 0%, #201204 55%, #0a0602 100%)' }
+            { name: 'Royal Amethyst', deep: '#08020e', gradient: 'radial-gradient(circle at 50% 12%, #2a0d3f 0%, #12051c 55%, #050208 100%)' }
         ];
 
         const modal = document.getElementById('infoModal');
@@ -857,6 +1046,7 @@
             document.body.style.background = themes[themeIndex].deep;
             document.body.style.backgroundImage = themes[themeIndex].gradient;
             showToast('✨ ' + themes[themeIndex].name + ' ✨');
+            closeDropdownMenu();
         });
 
         document.getElementById('speedUp').addEventListener('click', () => {
@@ -870,6 +1060,7 @@
                 flightDuration = 1.5;
                 document.getElementById('speedUp').innerText = '⚡ Flight Speed';
             }
+            closeDropdownMenu();
         });
 
         document.getElementById('shuffleFlowers').addEventListener('click', () => {
@@ -880,17 +1071,17 @@
                     f.element.style.transform = 'translate(-50%, -50%) scale(1)';
                 }, 300);
             });
+            closeDropdownMenu();
         });
 
-        // Change Word — cycles the garden through R, A, H, I, M, A on each click
         document.getElementById('changeWord').addEventListener('click', () => {
             wordIndex = (wordIndex + 1) % wordLetters.length;
             const letter = wordLetters[wordIndex];
             renderLetterGrid(letter);
             showToast('✨ ' + letter + ' ✨', 1400);
+            closeDropdownMenu();
         });
 
-        // Celebrate — a falling burst of hearts and blooms
         function celebrateBurst() {
             const pieces = ['💖', '💗', '✨', '🌸', '💐', '🌷'];
             const count = 26;
@@ -908,12 +1099,15 @@
             }
             showToast('💖 Celebrating Rahima 💖', 1800);
         }
-        document.getElementById('celebrateBtn').addEventListener('click', celebrateBurst);
+        document.getElementById('celebrateBtn').addEventListener('click', () => {
+            celebrateBurst();
+            closeDropdownMenu();
+        });
 
-        // Personal love note overlay
         const loveOverlay = document.getElementById('loveOverlay');
         document.getElementById('loveNote').addEventListener('click', () => {
             loveOverlay.classList.add('show');
+            closeDropdownMenu();
         });
         document.getElementById('closeLove').addEventListener('click', () => {
             loveOverlay.classList.remove('show');
@@ -922,14 +1116,67 @@
             if (e.target === loveOverlay) loveOverlay.classList.remove('show');
         });
 
-        // Build the initial garden as the letter R
+        // Password & Logout Authentication System
+        const CORRECT_PASSWORD = "rahima"; // You can change this password here anytime
+        const authOverlay = document.getElementById('authOverlay');
+        const authPasswordInput = document.getElementById('authPasswordInput');
+        const rememberMeCheckbox = document.getElementById('rememberMeCheckbox');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const authErrorMsg = document.getElementById('authErrorMsg');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        function checkAuthStatus() {
+            const isRemembered = localStorage.getItem('rahima_garden_remember') === 'true';
+            if (!isRemembered) {
+                authOverlay.classList.add('show');
+                setTimeout(() => authPasswordInput.focus(), 100);
+            }
+        }
+
+        function handleUnlock() {
+            const enteredPass = authPasswordInput.value.trim();
+            if (enteredPass === CORRECT_PASSWORD) {
+                authErrorMsg.textContent = '';
+                if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('rahima_garden_remember', 'true');
+                } else {
+                    localStorage.removeItem('rahima_garden_remember');
+                }
+                authOverlay.classList.remove('show');
+                authPasswordInput.value = '';
+                showToast('✨ Welcome Back ✨', 1800);
+            } else {
+                authErrorMsg.textContent = 'Incorrect Password. Try again.';
+                authPasswordInput.style.borderColor = '#ff6b8b';
+                setTimeout(() => {
+                    authPasswordInput.style.borderColor = '';
+                }, 1000);
+            }
+        }
+
+        authSubmitBtn.addEventListener('click', handleUnlock);
+        authPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleUnlock();
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            closeDropdownMenu();
+            localStorage.removeItem('rahima_garden_remember');
+            authPasswordInput.value = '';
+            authErrorMsg.textContent = '';
+            rememberMeCheckbox.checked = true;
+            authOverlay.classList.add('show');
+            setTimeout(() => authPasswordInput.focus(), 100);
+            showToast('🔒 Logged Out', 1500);
+        });
+
+        // Initialize App
         renderLetterGrid(wordLetters[wordIndex]);
-
-        // Show welcome toast info modal temporarily
         setTimeout(() => showToast('✨ WELCOME ✨', 3200), 800);
-
-        // Initialize butterfly automation sequence after intro
         setTimeout(chooseNextSequenceRoute, 1500);
+        
+        // Check initial authentication
+        checkAuthStatus();
     </script>
 </body>
 </html>
