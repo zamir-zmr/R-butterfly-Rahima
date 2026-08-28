@@ -210,6 +210,11 @@
             border-color: rgba(255, 182, 193, 0.4);
         }
 
+        .control-btn.gold {
+            background: linear-gradient(135deg, rgba(255,215,0,0.22), rgba(255,107,139,0.12));
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
         /* Botanical Element Styling */
         .flower {
             position: absolute;
@@ -272,6 +277,21 @@
             0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
             25% { opacity: 0.95; }
             100% { transform: translate(-50%, -160%) scale(1.2); opacity: 0; }
+        }
+
+        /* Confetti burst for the Celebrate feature */
+        .confetti-piece {
+            position: fixed;
+            top: -40px;
+            z-index: 60;
+            pointer-events: none;
+            animation: confettiFall linear forwards;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(112vh) rotate(360deg); opacity: 0.85; }
         }
 
         /* Realistic Butterfly Animation Engine with Dual-Layer Wings */
@@ -513,10 +533,12 @@
     <div class="info-modal" id="infoModal">✨ WELCOME ✨</div>
 
     <div class="controls-footer">
+        <button class="control-btn gold" id="changeWord">🔤 Change Word</button>
         <button class="control-btn" id="toggleTheme">✨ Atmosphere</button>
         <button class="control-btn" id="speedUp">⚡ Flight Speed</button>
         <button class="control-btn" id="shuffleFlowers">🌸 Refresh Flora</button>
         <button class="control-btn accent" id="loveNote">💌 For You</button>
+        <button class="control-btn accent" id="celebrateBtn">🎉 Celebrate</button>
     </div>
 
     <div class="butterfly-container" id="butterfly">
@@ -532,8 +554,7 @@
         <div class="love-card">
             <span class="love-icon">💖</span>
             <h2>For My Rahima</h2>
-            <p>Is screen ka har ek phool aapke liye mere pyaar ka ek chhota sa hissa hai. Humare ghar ka dil aur Zaina ki sabse behtareen mummy banne ke liye aapka shukriya. Aapke liye hamesha aabhari, hamesha aapka.
-</p>
+            <p>Every flower on this screen is a small piece of my love for you. Thank you for being the heart of our home and the most wonderful mommy to Zaina. Forever grateful for you, forever yours.</p>
             <button id="closeLove">Close</button>
         </div>
     </div>
@@ -568,7 +589,7 @@
         const butterfly = document.getElementById('butterfly');
         const flowersPool = ['🌻', '🌹', '🌺', '🌼', '🌷', '🌸', '💐', '🪷'];
 
-        // Precise double-line matrix coordinates forming the letter 'R'
+        // Precise double-line matrix coordinates forming the letter 'R' (hand-tuned curve)
         const perfectRGrid = [
             // --- LEFT STEM (DOUBLE LINE) ---
             {x: 20, y: 15, delay: 0.0}, {x: 20, y: 22, delay: 0.04}, {x: 20, y: 29, delay: 0.08}, {x: 20, y: 36, delay: 0.12}, {x: 20, y: 43, delay: 0.16}, {x: 20, y: 50, delay: 0.20}, {x: 20, y: 57, delay: 0.24}, {x: 20, y: 64, delay: 0.28}, {x: 20, y: 71, delay: 0.32}, {x: 20, y: 78, delay: 0.36}, {x: 20, y: 85, delay: 0.40},
@@ -582,6 +603,67 @@
             {x: 38, y: 56, delay: 0.90}, {x: 45, y: 62, delay: 0.94}, {x: 53, y: 68, delay: 0.98}, {x: 61, y: 74, delay: 1.02}, {x: 69, y: 80, delay: 1.06}, {x: 77, y: 86, delay: 1.10},
             {x: 42, y: 54, delay: 0.92}, {x: 49, y: 60, delay: 0.96}, {x: 57, y: 66, delay: 1.00}, {x: 65, y: 72, delay: 1.04}, {x: 73, y: 78, delay: 1.08}, {x: 81, y: 84, delay: 1.12}
         ];
+
+        // Generic double-line letter builder, used for A / H / I / M so every
+        // letter of "RAHIMA" matches the same hand-drawn, double-stroke style as R.
+        function buildSegmentPoints(x1, y1, x2, y2, spacing, offset) {
+            spacing = spacing || 7;
+            offset = offset || 7;
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.sqrt(dx * dx + dy * dy) || 1;
+            const steps = Math.max(2, Math.round(len / spacing));
+            const nx = -dy / len, ny = dx / len;
+            const pts = [];
+            for (let s = 0; s <= steps; s++) {
+                const t = s / steps;
+                const px = x1 + dx * t, py = y1 + dy * t;
+                pts.push({ x: px + (nx * offset) / 2, y: py + (ny * offset) / 2 });
+                pts.push({ x: px - (nx * offset) / 2, y: py - (ny * offset) / 2 });
+            }
+            return pts;
+        }
+
+        function buildLetterFromSegments(segments) {
+            let all = [];
+            segments.forEach(([x1, y1, x2, y2]) => {
+                all = all.concat(buildSegmentPoints(x1, y1, x2, y2));
+            });
+            const maxDelay = 1.15;
+            return all.map((p, i) => ({
+                x: p.x,
+                y: p.y,
+                delay: Math.min(maxDelay, i * (maxDelay / Math.max(1, all.length - 1)))
+            }));
+        }
+
+        const LETTER_BUILDERS = {
+            R: () => perfectRGrid,
+            A: () => buildLetterFromSegments([
+                [50, 12, 20, 85],
+                [50, 12, 80, 85],
+                [33, 52, 67, 52]
+            ]),
+            H: () => buildLetterFromSegments([
+                [22, 13, 22, 85],
+                [78, 13, 78, 85],
+                [22, 49, 78, 49]
+            ]),
+            I: () => buildLetterFromSegments([
+                [35, 13, 65, 13],
+                [50, 13, 50, 85],
+                [35, 85, 65, 85]
+            ]),
+            M: () => buildLetterFromSegments([
+                [20, 85, 20, 13],
+                [80, 85, 80, 13],
+                [20, 13, 50, 55],
+                [80, 13, 50, 55]
+            ])
+        };
+
+        // The word this garden spells, letter by letter, on each "Change Word" click
+        const wordLetters = ['R', 'A', 'H', 'I', 'M', 'A'];
+        let wordIndex = 0;
 
         const flowerPositions = [];
         let currentX = window.innerWidth / 2;
@@ -598,33 +680,42 @@
         const TOP_SAFE = isCompact ? 92 : 112;
         const BOTTOM_SAFE = isCompact ? 78 : 92;
 
-        perfectRGrid.forEach((pos) => {
-            const flowerEl = document.createElement('div');
-            flowerEl.className = 'flower';
-            flowerEl.innerText = flowersPool[Math.floor(Math.random() * flowersPool.length)];
-            flowerEl.style.animationDelay = pos.delay + 's';
+        function renderLetterGrid(letterChar) {
+            // clear any existing flowers
+            flowerPositions.forEach(f => f.element.remove());
+            flowerPositions.length = 0;
 
-            let fx = Math.floor((pos.x / 100) * window.innerWidth);
-            let fy = Math.floor((pos.y / 100) * window.innerHeight);
+            const builder = LETTER_BUILDERS[letterChar];
+            const grid = builder ? builder() : perfectRGrid;
 
-            fx = Math.min(Math.max(fx, FLOWER_MARGIN), window.innerWidth - FLOWER_MARGIN);
-            fy = Math.min(Math.max(fy, TOP_SAFE), window.innerHeight - BOTTOM_SAFE);
+            grid.forEach((pos) => {
+                const flowerEl = document.createElement('div');
+                flowerEl.className = 'flower';
+                flowerEl.innerText = flowersPool[Math.floor(Math.random() * flowersPool.length)];
+                flowerEl.style.animationDelay = (pos.delay || 0) + 's';
 
-            flowerEl.style.left = fx + 'px';
-            flowerEl.style.top = fy + 'px';
-            document.body.appendChild(flowerEl);
-            
-            const positionObj = { x: fx, y: fy, element: flowerEl };
-            flowerPositions.push(positionObj);
+                let fx = Math.floor((pos.x / 100) * window.innerWidth);
+                let fy = Math.floor((pos.y / 100) * window.innerHeight);
 
-            const handleInteraction = (e) => {
-                e.stopPropagation();
-                createRipple(fx, fy);
-                triggerJuiceAndFly(positionObj);
-            };
-            flowerEl.addEventListener('click', handleInteraction);
-            flowerEl.addEventListener('touchstart', handleInteraction);
-        });
+                fx = Math.min(Math.max(fx, FLOWER_MARGIN), window.innerWidth - FLOWER_MARGIN);
+                fy = Math.min(Math.max(fy, TOP_SAFE), window.innerHeight - BOTTOM_SAFE);
+
+                flowerEl.style.left = fx + 'px';
+                flowerEl.style.top = fy + 'px';
+                document.body.appendChild(flowerEl);
+
+                const positionObj = { x: fx, y: fy, element: flowerEl };
+                flowerPositions.push(positionObj);
+
+                const handleInteraction = (e) => {
+                    e.stopPropagation();
+                    createRipple(fx, fy);
+                    triggerJuiceAndFly(positionObj);
+                };
+                flowerEl.addEventListener('click', handleInteraction);
+                flowerEl.addEventListener('touchstart', handleInteraction);
+            });
+        }
 
         function createRipple(x, y) {
             const ripple = document.createElement('div');
@@ -743,7 +834,12 @@
             { name: 'Emerald Prestige', deep: '#020a06', gradient: 'radial-gradient(circle at 50% 12%, #0c2b1c 0%, #04120c 55%, #010805 100%)' },
             { name: 'Onyx & Gold', deep: '#060503', gradient: 'radial-gradient(circle at 50% 12%, #2b2410 0%, #120f06 55%, #050402 100%)' },
             { name: 'Royal Amethyst', deep: '#08020e', gradient: 'radial-gradient(circle at 50% 12%, #2a0d3f 0%, #12051c 55%, #050208 100%)' },
-            { name: 'Champagne Rosé', deep: '#0c0608', gradient: 'radial-gradient(circle at 50% 12%, #3a1a22 0%, #170a0e 55%, #060304 100%)' }
+            { name: 'Champagne Rosé', deep: '#0c0608', gradient: 'radial-gradient(circle at 50% 12%, #3a1a22 0%, #170a0e 55%, #060304 100%)' },
+            { name: 'Rose Gold Elegance', deep: '#0c0709', gradient: 'radial-gradient(circle at 50% 12%, #3d1f22 0%, #180d0f 55%, #070404 100%)' },
+            { name: 'Ocean Teal', deep: '#01080a', gradient: 'radial-gradient(circle at 50% 12%, #073b3f 0%, #031a1c 55%, #010a0b 100%)' },
+            { name: 'Charcoal Platinum', deep: '#08090a', gradient: 'radial-gradient(circle at 50% 12%, #2c2f33 0%, #131416 55%, #050506 100%)' },
+            { name: 'Deep Plum', deep: '#08030a', gradient: 'radial-gradient(circle at 50% 12%, #331245 0%, #17081e 55%, #06030a 100%)' },
+            { name: 'Golden Amber', deep: '#0a0602', gradient: 'radial-gradient(circle at 50% 12%, #4a2d0a 0%, #201204 55%, #0a0602 100%)' }
         ];
 
         const modal = document.getElementById('infoModal');
@@ -786,6 +882,34 @@
             });
         });
 
+        // Change Word — cycles the garden through R, A, H, I, M, A on each click
+        document.getElementById('changeWord').addEventListener('click', () => {
+            wordIndex = (wordIndex + 1) % wordLetters.length;
+            const letter = wordLetters[wordIndex];
+            renderLetterGrid(letter);
+            showToast('✨ ' + letter + ' ✨', 1400);
+        });
+
+        // Celebrate — a falling burst of hearts and blooms
+        function celebrateBurst() {
+            const pieces = ['💖', '💗', '✨', '🌸', '💐', '🌷'];
+            const count = 26;
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti-piece';
+                el.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+                el.style.left = Math.random() * 100 + 'vw';
+                const duration = 2.4 + Math.random() * 1.8;
+                el.style.animationDuration = duration + 's';
+                el.style.animationDelay = (Math.random() * 0.6) + 's';
+                el.style.fontSize = (16 + Math.random() * 14) + 'px';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), (duration + 0.6) * 1000);
+            }
+            showToast('💖 Celebrating Rahima 💖', 1800);
+        }
+        document.getElementById('celebrateBtn').addEventListener('click', celebrateBurst);
+
         // Personal love note overlay
         const loveOverlay = document.getElementById('loveOverlay');
         document.getElementById('loveNote').addEventListener('click', () => {
@@ -797,6 +921,9 @@
         loveOverlay.addEventListener('click', (e) => {
             if (e.target === loveOverlay) loveOverlay.classList.remove('show');
         });
+
+        // Build the initial garden as the letter R
+        renderLetterGrid(wordLetters[wordIndex]);
 
         // Show welcome toast info modal temporarily
         setTimeout(() => showToast('✨ WELCOME ✨', 3200), 800);
