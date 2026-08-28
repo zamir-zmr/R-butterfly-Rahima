@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>Rahima Butterfly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -24,17 +24,28 @@
             -webkit-user-select: none;
         }
 
-        body {
+        html, body {
             margin: 0;
             padding: 0;
             background: var(--bg-deep);
             background-image: var(--bg-gradient);
             overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            position: relative;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            inset: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: var(--text-main);
+            transition: background-color 1s ease;
+        }
+
+        /* Cinematic vignette for a polished, professional depth */
+        .vignette-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 45%, transparent 45%, rgba(0,0,0,0.55) 100%);
+            z-index: 1;
         }
 
         /* Ambient background bokeh particles */
@@ -72,31 +83,48 @@
             100% { transform: translate(var(--dx), var(--dy)); opacity: 0.1; }
         }
 
-        /* Executive Cinematic Header */
+        /* Executive Cinematic Header — compact, always fits on screen */
         .header-card {
-            position: absolute;
-            top: 0px;
+            position: fixed;
+            top: max(10px, env(safe-area-inset-top));
             left: 50%;
             transform: translateX(-50%);
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            padding: 1px 32px;
-            border-radius: 50px;
+            padding: 10px 22px;
+            border-radius: 20px;
             text-align: center;
             color: var(--text-main);
             font-family: 'Cinzel', serif;
-            font-size: 13px;
+            font-size: clamp(10.5px, 3.2vw, 13px);
             font-weight: 600;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
+            line-height: 1.55;
             box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.55);
             pointer-events: none;
             z-index: 20;
+            max-width: min(92vw, 420px);
+            white-space: normal;
+            animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .header-card .main-line {
             display: flex;
             align-items: center;
-            gap: 12px;
-            animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            justify-content: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .header-card .sub-line {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.78em;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         @keyframes slideDown {
@@ -104,9 +132,9 @@
             100% { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        .header-card span {
+        .header-card span.heart {
             color: var(--primary-pink);
-            font-size: 16px;
+            font-size: 1.1em;
             animation: pulseHeart 1.6s ease-in-out infinite;
             display: inline-block;
         }
@@ -116,24 +144,30 @@
             50% { transform: scale(1.3); }
         }
 
-        /* Professional Control Dock */
+        /* Professional Control Dock — never clips, scrolls internally if needed */
         .controls-footer {
-            position: absolute;
-            bottom: 0px;
+            position: fixed;
+            bottom: max(14px, env(safe-area-inset-bottom));
             left: 50%;
             transform: translateX(-50%);
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            padding: 10px 18px;
-            border-radius: 28px;
+            padding: 8px 10px;
+            border-radius: 24px;
             display: flex;
-            gap: 12px;
+            gap: 6px;
             z-index: 20;
+            max-width: 94vw;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
             box-shadow: 0 12px 36px rgba(0,0,0,0.6);
             animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        .controls-footer::-webkit-scrollbar { display: none; }
 
         @keyframes slideUp {
             0% { transform: translate(-50%, 50px); opacity: 0; }
@@ -144,17 +178,19 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.12);
             color: var(--text-main);
-            padding: 9px 18px;
-            border-radius: 18px;
+            padding: 8px 13px;
+            border-radius: 16px;
             cursor: pointer;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 13px;
+            font-size: clamp(10px, 2.6vw, 13px);
             font-weight: 500;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            flex-shrink: 0;
             transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .control-btn:hover {
@@ -169,10 +205,15 @@
             transform: translateY(0);
         }
 
+        .control-btn.accent {
+            background: linear-gradient(135deg, rgba(255,107,139,0.28), rgba(255,215,0,0.14));
+            border-color: rgba(255, 182, 193, 0.4);
+        }
+
         /* Botanical Element Styling */
         .flower {
             position: absolute;
-            font-size: 28px; 
+            font-size: clamp(18px, 5.4vw, 28px);
             transform: translate(-50%, -50%) scale(0);
             z-index: 2;
             cursor: pointer;
@@ -214,6 +255,23 @@
             0% { transform: translate(0, 0) scale(0.2); opacity: 1; }
             50% { opacity: 1; }
             100% { transform: translate(var(--tx), var(--ty)) scale(1.15); opacity: 0; }
+        }
+
+        /* Dreamy sleep bubble — rises from every flower tap */
+        .dream-bubble {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            z-index: 11;
+            opacity: 0;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            animation: dreamFloat 1.6s ease-out forwards;
+        }
+
+        @keyframes dreamFloat {
+            0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+            25% { opacity: 0.95; }
+            100% { transform: translate(-50%, -160%) scale(1.2); opacity: 0; }
         }
 
         /* Realistic Butterfly Animation Engine with Dual-Layer Wings */
@@ -280,6 +338,28 @@
             animation-duration: 0.38s; 
         }
 
+        /* Sleepy bubble that appears above the butterfly while it rests and drinks */
+        .rest-bubble {
+            position: absolute;
+            left: 50%;
+            top: -18px;
+            transform: translateX(-50%);
+            font-size: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .butterfly-container.drinking .rest-bubble {
+            opacity: 1;
+            animation: restBob 1.4s ease-in-out infinite;
+        }
+
+        @keyframes restBob {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-6px); }
+        }
+
         @keyframes flapLeft {
             0% { transform: scaleX(1) rotateY(0deg); }
             100% { transform: scaleX(0.15) rotateY(75deg); }
@@ -308,17 +388,17 @@
 
         /* Interactive Modal Info Overlay */
         .info-modal {
-            position: absolute;
-            top: 90px;
+            position: fixed;
+            top: max(70px, calc(env(safe-area-inset-top) + 64px));
             left: 50%;
             transform: translateX(-50%) translateY(-20px);
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border-hover);
-            padding: 12px 24px;
+            padding: 10px 22px;
             border-radius: 20px;
             color: #ffd1dc;
-            font-size: 13px;
+            font-size: 12.5px;
             letter-spacing: 0.5px;
             z-index: 25;
             opacity: 0;
@@ -326,33 +406,134 @@
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             text-align: center;
+            max-width: 90vw;
+            white-space: nowrap;
         }
 
         .info-modal.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+
+        /* Love note overlay — a personal touch, dedicated to Rahima */
+        .love-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+            padding: 24px;
+        }
+
+        .love-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .love-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border-hover);
+            border-radius: 26px;
+            padding: 34px 26px 26px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.65);
+            transform: translateY(14px) scale(0.96);
+            transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .love-overlay.show .love-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .love-card .love-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+            display: block;
+            animation: pulseHeart 1.6s ease-in-out infinite;
+        }
+
+        .love-card h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--primary-pink);
+            margin: 0 0 14px;
+            font-size: 19px;
+            letter-spacing: 1px;
+        }
+
+        .love-card p {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text-main);
+            margin: 0 0 22px;
+        }
+
+        .love-card button {
+            background: linear-gradient(135deg, var(--primary-pink), #ffb3c6);
+            border: none;
+            color: #2a0410;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding: 10px 30px;
+            border-radius: 22px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+            transition: transform 0.2s ease;
+        }
+
+        .love-card button:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 380px) {
+            .header-card { padding: 8px 16px; border-radius: 16px; }
+            .control-btn { padding: 7px 10px; }
+            .controls-footer { padding: 7px 8px; gap: 5px; }
+        }
     </style>
 </head>
 <body>
 
+    <div class="vignette-overlay"></div>
+
     <div class="header-card">
-        <span>❤</span> Dedicated to Rahima Zaina's Mommy <span>❤</span>
+        <div class="main-line"><span class="heart">❤</span> Dedicated to Rahima <span class="heart">❤</span></div>
+        <span class="sub-line">Zaina's Mommy · My Beloved Wife</span>
     </div>
 
-    <div class="info-modal" id="infoModal">✨WELCOME✨</div>
+    <div class="info-modal" id="infoModal">✨ WELCOME ✨</div>
 
     <div class="controls-footer">
         <button class="control-btn" id="toggleTheme">✨ Atmosphere</button>
         <button class="control-btn" id="speedUp">⚡ Flight Speed</button>
         <button class="control-btn" id="shuffleFlowers">🌸 Refresh Flora</button>
+        <button class="control-btn accent" id="loveNote">💌 For You</button>
     </div>
 
     <div class="butterfly-container" id="butterfly">
+        <div class="rest-bubble">💤</div>
         <div class="butterfly-body"></div>
         <div class="wing-layer">
             <div class="wing left">🦋</div>
             <div class="wing right">🦋</div>
+        </div>
+    </div>
+
+    <div class="love-overlay" id="loveOverlay">
+        <div class="love-card">
+            <span class="love-icon">💖</span>
+            <h2>For My Rahima</h2>
+            <p>Every flower on this screen is a small piece of my love for you. Thank you for being the heart of our home and the most wonderful mommy to Zaina. Forever grateful for you, forever yours.</p>
+            <button id="closeLove">Close</button>
         </div>
     </div>
 
@@ -385,7 +566,7 @@
 
         const butterfly = document.getElementById('butterfly');
         const flowersPool = ['🌻', '🌹', '🌺', '🌼', '🌷', '🌸', '💐', '🪷'];
-        
+
         // Precise double-line matrix coordinates forming the letter 'R'
         const perfectRGrid = [
             // --- LEFT STEM (DOUBLE LINE) ---
@@ -409,15 +590,25 @@
         let drinkTimeout = null;
         let flightDuration = 1.5; // Optimized smooth flight duration
 
+        // Safe bounds so every flower always fits on screen, under the
+        // header and above the footer, regardless of device width.
+        const isCompact = window.innerWidth < 480;
+        const FLOWER_MARGIN = isCompact ? 22 : 30;
+        const TOP_SAFE = isCompact ? 92 : 112;
+        const BOTTOM_SAFE = isCompact ? 78 : 92;
+
         perfectRGrid.forEach((pos) => {
             const flowerEl = document.createElement('div');
             flowerEl.className = 'flower';
             flowerEl.innerText = flowersPool[Math.floor(Math.random() * flowersPool.length)];
             flowerEl.style.animationDelay = pos.delay + 's';
-            
-            const fx = Math.floor((pos.x / 100) * window.innerWidth);
-            const fy = Math.floor((pos.y / 100) * window.innerHeight);
-            
+
+            let fx = Math.floor((pos.x / 100) * window.innerWidth);
+            let fy = Math.floor((pos.y / 100) * window.innerHeight);
+
+            fx = Math.min(Math.max(fx, FLOWER_MARGIN), window.innerWidth - FLOWER_MARGIN);
+            fy = Math.min(Math.max(fy, TOP_SAFE), window.innerHeight - BOTTOM_SAFE);
+
             flowerEl.style.left = fx + 'px';
             flowerEl.style.top = fy + 'px';
             document.body.appendChild(flowerEl);
@@ -443,6 +634,16 @@
             ripple.style.height = '70px';
             document.body.appendChild(ripple);
             setTimeout(() => ripple.remove(), 650);
+        }
+
+        function spawnDreamBubble(x, y) {
+            const dream = document.createElement('div');
+            dream.className = 'dream-bubble';
+            dream.textContent = '💤';
+            dream.style.left = x + 'px';
+            dream.style.top = (y - 22) + 'px';
+            document.body.appendChild(dream);
+            setTimeout(() => dream.remove(), 1700);
         }
 
         function triggerJuiceAndFly(targetPoint) {
@@ -481,6 +682,9 @@
 
             document.body.appendChild(splashContainer);
             setTimeout(() => splashContainer.remove(), 900);
+
+            // Dreamy sleep bubble rising from the tapped flower
+            spawnDreamBubble(targetPoint.x, targetPoint.y);
 
             targetPoint.element.style.transform = 'translate(-50%, -50%) scale(1.5)';
             setTimeout(() => {
@@ -532,24 +736,30 @@
         // Professional Control Dock Functionality
         let themeIndex = 0;
         const themes = [
-            {
-                deep: '#05020a',
-                gradient: 'radial-gradient(circle at 50% 12%, #1e0b2e 0%, #0a0314 55%, #030108 100%)'
-            },
-            {
-                deep: '#02060e',
-                gradient: 'radial-gradient(circle at 50% 12%, #0a2135 0%, #040e18 55%, #010408 100%)'
-            },
-            {
-                deep: '#0a0204',
-                gradient: 'radial-gradient(circle at 50% 12%, #2b0c13 0%, #120306 55%, #050102 100%)'
-            }
+            { name: 'Midnight Rose', deep: '#05020a', gradient: 'radial-gradient(circle at 50% 12%, #1e0b2e 0%, #0a0314 55%, #030108 100%)' },
+            { name: 'Sapphire Executive', deep: '#02060e', gradient: 'radial-gradient(circle at 50% 12%, #0a2135 0%, #040e18 55%, #010408 100%)' },
+            { name: 'Crimson Velvet', deep: '#0a0204', gradient: 'radial-gradient(circle at 50% 12%, #2b0c13 0%, #120306 55%, #050102 100%)' },
+            { name: 'Emerald Prestige', deep: '#020a06', gradient: 'radial-gradient(circle at 50% 12%, #0c2b1c 0%, #04120c 55%, #010805 100%)' },
+            { name: 'Onyx & Gold', deep: '#060503', gradient: 'radial-gradient(circle at 50% 12%, #2b2410 0%, #120f06 55%, #050402 100%)' },
+            { name: 'Royal Amethyst', deep: '#08020e', gradient: 'radial-gradient(circle at 50% 12%, #2a0d3f 0%, #12051c 55%, #050208 100%)' },
+            { name: 'Champagne Rosé', deep: '#0c0608', gradient: 'radial-gradient(circle at 50% 12%, #3a1a22 0%, #170a0e 55%, #060304 100%)' }
         ];
-        
+
+        const modal = document.getElementById('infoModal');
+        let modalTimeout = null;
+
+        function showToast(text, duration) {
+            clearTimeout(modalTimeout);
+            modal.textContent = text;
+            modal.classList.add('show');
+            modalTimeout = setTimeout(() => modal.classList.remove('show'), duration || 1800);
+        }
+
         document.getElementById('toggleTheme').addEventListener('click', () => {
             themeIndex = (themeIndex + 1) % themes.length;
             document.body.style.background = themes[themeIndex].deep;
             document.body.style.backgroundImage = themes[themeIndex].gradient;
+            showToast('✨ ' + themes[themeIndex].name + ' ✨');
         });
 
         document.getElementById('speedUp').addEventListener('click', () => {
@@ -575,10 +785,20 @@
             });
         });
 
+        // Personal love note overlay
+        const loveOverlay = document.getElementById('loveOverlay');
+        document.getElementById('loveNote').addEventListener('click', () => {
+            loveOverlay.classList.add('show');
+        });
+        document.getElementById('closeLove').addEventListener('click', () => {
+            loveOverlay.classList.remove('show');
+        });
+        loveOverlay.addEventListener('click', (e) => {
+            if (e.target === loveOverlay) loveOverlay.classList.remove('show');
+        });
+
         // Show welcome toast info modal temporarily
-        const modal = document.getElementById('infoModal');
-        setTimeout(() => modal.classList.add('show'), 800);
-        setTimeout(() => modal.classList.remove('show'), 5000);
+        setTimeout(() => showToast('✨ WELCOME ✨', 3200), 800);
 
         // Initialize butterfly automation sequence after intro
         setTimeout(chooseNextSequenceRoute, 1500);
