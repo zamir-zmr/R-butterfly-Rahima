@@ -8,6 +8,7 @@
     <style>
         :root {
             --wing-size: 42px;
+            --flower-size: 24px;
             --bg-deep: #05020a;
             --bg-gradient: radial-gradient(circle at 50% 12%, #1e0b2e 0%, #0a0314 55%, #030108 100%);
             --glass-bg: rgba(18, 8, 28, 0.75);
@@ -264,10 +265,81 @@
             border-color: rgba(255, 215, 0, 0.35);
         }
 
+        /* Inline Size Control Block inside Menu */
+        .menu-size-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 4px 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 2px 0;
+        }
+
+        .menu-block-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        /* Background Color Picker */
+        .bg-color-picker {
+            position: relative;
+            width: 100%;
+        }
+
+        .bg-color-btn {
+            justify-content: flex-start;
+        }
+
+        .color-swatch {
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+        }
+
+        .bg-color-dropdown {
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 12px 10px;
+            margin-top: 8px;
+            background: rgba(10, 5, 15, 0.92);
+            border: 1px solid rgba(255, 182, 193, 0.28);
+            border-radius: 16px;
+        }
+
+        .bg-color-dropdown.open {
+            display: grid;
+        }
+
+        .color-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .color-option:active {
+            transform: scale(0.9);
+        }
+
+        .color-option.active {
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
         /* Botanical Element Styling */
         .flower {
             position: absolute;
-            font-size: clamp(18px, 5.4vw, 28px);
+            font-size: var(--flower-size, clamp(18px, 5.4vw, 28px));
             transform: translate(-50%, -50%) scale(0);
             z-index: 2;
             cursor: pointer;
@@ -847,7 +919,23 @@
         </div>
         <button class="menu-item-btn gold" id="changeWord">🔤 Change Word</button>
         <button class="menu-item-btn gold" id="uploadWingMenuBtn">📸 Upload Wing</button>
-        <button class="menu-item-btn" id="toggleTheme">✨ Atmosphere</button>
+
+        <div class="bg-color-picker">
+            <button class="menu-item-btn bg-color-btn" id="bgColorBtn" type="button">
+                <span class="color-swatch" id="colorSwatchIndicator"></span> Background Color
+            </button>
+            <div class="bg-color-dropdown" id="bgColorDropdownList"></div>
+        </div>
+
+        <div class="menu-size-block">
+            <span class="menu-block-label">🌼 Flower Size</span>
+            <div class="size-control-row">
+                <button class="size-btn" id="decreaseFlowerSizeBtn" type="button">−</button>
+                <input type="number" id="flowerSizeInput" class="size-input" min="14" max="44" step="2" value="24">
+                <button class="size-btn" id="increaseFlowerSizeBtn" type="button">+</button>
+            </div>
+        </div>
+
         <button class="menu-item-btn" id="speedUp">⚡ Flight Speed</button>
         <button class="menu-item-btn" id="shuffleFlowers">🌸 Refresh Flowers</button>
         <button class="menu-item-btn accent" id="loveNote">💌 For You</button>
@@ -927,6 +1015,39 @@
     </div>
 
     <script>
+        // Safe storage wrapper - never lets a blocked/unavailable localStorage crash the app
+        const safeStorage = (function() {
+            let memoryStore = {};
+            let available = true;
+            try {
+                const testKey = '__rahima_test__';
+                window.localStorage.setItem(testKey, '1');
+                window.localStorage.removeItem(testKey);
+            } catch (e) {
+                available = false;
+            }
+            return {
+                getItem(key) {
+                    if (available) {
+                        try { return window.localStorage.getItem(key); } catch (e) { available = false; }
+                    }
+                    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+                },
+                setItem(key, value) {
+                    if (available) {
+                        try { window.localStorage.setItem(key, value); return; } catch (e) { available = false; }
+                    }
+                    memoryStore[key] = String(value);
+                },
+                removeItem(key) {
+                    if (available) {
+                        try { window.localStorage.removeItem(key); return; } catch (e) { available = false; }
+                    }
+                    delete memoryStore[key];
+                }
+            };
+        })();
+
         // Ambient background particles
         for (let i = 0; i < 40; i++) {
             const particle = document.createElement('div');
@@ -1036,6 +1157,28 @@
         const FLOWER_MARGIN = isCompact ? 22 : 30;
         const TOP_SAFE = isCompact ? 85 : 100;
         const BOTTOM_SAFE = isCompact ? 35 : 45;
+
+        // Flower Size Control
+        const flowerSizeInput = document.getElementById('flowerSizeInput');
+        const decreaseFlowerSizeBtn = document.getElementById('decreaseFlowerSizeBtn');
+        const increaseFlowerSizeBtn = document.getElementById('increaseFlowerSizeBtn');
+        const DEFAULT_FLOWER_SIZE = 24;
+        const MIN_FLOWER_SIZE = 14;
+        const MAX_FLOWER_SIZE = 44;
+        let currentFlowerSize = parseInt(safeStorage.getItem('rahima_garden_flowerSize')) || DEFAULT_FLOWER_SIZE;
+
+        function applyFlowerSize(size) {
+            currentFlowerSize = Math.min(MAX_FLOWER_SIZE, Math.max(MIN_FLOWER_SIZE, parseInt(size) || DEFAULT_FLOWER_SIZE));
+            document.documentElement.style.setProperty('--flower-size', currentFlowerSize + 'px');
+            flowerSizeInput.value = currentFlowerSize;
+            safeStorage.setItem('rahima_garden_flowerSize', currentFlowerSize);
+        }
+
+        decreaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSize(currentFlowerSize - 2));
+        increaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSize(currentFlowerSize + 2));
+        flowerSizeInput.addEventListener('change', () => applyFlowerSize(flowerSizeInput.value));
+
+        applyFlowerSize(currentFlowerSize);
 
         function renderLetterGrid(letterChar) {
             flowerPositions.forEach(f => f.element.remove());
@@ -1207,16 +1350,98 @@
             }
         });
 
-        // Theme Switcher
-        let themeIndex = 0;
+        // Background Color Picker (15 colors) - deep/gradient computed from swatch so
+        // every theme is guaranteed a properly dark, distinctly tinted background.
         const themes = [
-            { name: 'Midnight Rose', deep: '#05020a', gradient: 'radial-gradient(circle at 50% 12%, #1e0b2e 0%, #0a0314 55%, #030108 100%)' },
-            { name: 'Sapphire Executive', deep: '#02060e', gradient: 'radial-gradient(circle at 50% 12%, #0a2135 0%, #040e18 55%, #010408 100%)' },
-            { name: 'Crimson Velvet', deep: '#0a0204', gradient: 'radial-gradient(circle at 50% 12%, #2b0c13 0%, #120306 55%, #050102 100%)' },
-            { name: 'Emerald Prestige', deep: '#020a06', gradient: 'radial-gradient(circle at 50% 12%, #0c2b1c 0%, #04120c 55%, #010805 100%)' },
-            { name: 'Onyx & Gold', deep: '#060503', gradient: 'radial-gradient(circle at 50% 12%, #2b2410 0%, #120f06 55%, #050402 100%)' },
-            { name: 'Royal Amethyst', deep: '#08020e', gradient: 'radial-gradient(circle at 50% 12%, #2a0d3f 0%, #12051c 55%, #050208 100%)' }
+            { name: 'Midnight Rose',    swatch: '#ff6b8b' },
+            { name: 'Sapphire Blue',    swatch: '#3b82f6' },
+            { name: 'Deep Navy',        swatch: '#1e40af' },
+            { name: 'Crimson Velvet',   swatch: '#e63950' },
+            { name: 'Emerald Prestige', swatch: '#2ecc71' },
+            { name: 'Golden Yellow',    swatch: '#ffd700' },
+            { name: 'Royal Amethyst',   swatch: '#9b59b6' },
+            { name: 'Sunset Orange',    swatch: '#ff8c1a' },
+            { name: 'Ocean Teal',       swatch: '#14b8a6' },
+            { name: 'Electric Cyan',    swatch: '#22d3ee' },
+            { name: 'Chocolate Brown',  swatch: '#8b5a2b' },
+            { name: 'Slate Gray',       swatch: '#94a3b8' },
+            { name: 'Jet Black',        swatch: '#7a7a7a' },
+            { name: 'Ivory Pearl',      swatch: '#f0e6d2' },
+            { name: 'Lavender Dream',   swatch: '#c9a8ff' }
         ];
+
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const num = parseInt(hex, 16);
+            return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+        }
+
+        // Mix the swatch color down toward black by `weight` (0 = pure black, 1 = pure swatch)
+        function darkenSwatch(hex, weight) {
+            const c = hexToRgb(hex);
+            return rgbToHex(c.r * weight, c.g * weight, c.b * weight);
+        }
+
+        function buildThemeColors(swatch) {
+            return {
+                deep: darkenSwatch(swatch, 0.035),
+                mid: darkenSwatch(swatch, 0.40),
+                dark: darkenSwatch(swatch, 0.11),
+                darkest: darkenSwatch(swatch, 0.015)
+            };
+        }
+
+        let themeIndex = parseInt(safeStorage.getItem('rahima_garden_themeIndex')) || 0;
+        const bgColorBtn = document.getElementById('bgColorBtn');
+        const bgColorSwatch = document.getElementById('colorSwatchIndicator');
+        const bgColorDropdown = document.getElementById('bgColorDropdownList');
+
+        function buildColorDropdown() {
+            bgColorDropdown.innerHTML = '';
+            themes.forEach((t, i) => {
+                const opt = document.createElement('button');
+                opt.type = 'button';
+                opt.className = 'color-option' + (i === themeIndex ? ' active' : '');
+                opt.style.background = t.swatch;
+                opt.title = t.name;
+                opt.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTheme(i);
+                    bgColorDropdown.classList.remove('open');
+                });
+                bgColorDropdown.appendChild(opt);
+            });
+        }
+
+        function applyTheme(i) {
+            themeIndex = i;
+            const c = buildThemeColors(themes[i].swatch);
+            const gradient = 'radial-gradient(circle at 50% 12%, ' + c.mid + ' 0%, ' + c.dark + ' 55%, ' + c.darkest + ' 100%)';
+            document.body.style.backgroundColor = c.deep;
+            document.body.style.backgroundImage = gradient;
+            bgColorSwatch.style.background = themes[i].swatch;
+            safeStorage.setItem('rahima_garden_themeIndex', i);
+            showToast('✨ ' + themes[i].name + ' ✨');
+            buildColorDropdown();
+        }
+
+        bgColorBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            bgColorDropdown.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!bgColorDropdown.contains(e.target) && !bgColorBtn.contains(e.target)) {
+                bgColorDropdown.classList.remove('open');
+            }
+        });
+
+        buildColorDropdown();
 
         const modal = document.getElementById('infoModal');
         let modalTimeout = null;
@@ -1228,13 +1453,7 @@
             modalTimeout = setTimeout(() => modal.classList.remove('show'), duration || 1800);
         }
 
-        document.getElementById('toggleTheme').addEventListener('click', () => {
-            themeIndex = (themeIndex + 1) % themes.length;
-            document.body.style.background = themes[themeIndex].deep;
-            document.body.style.backgroundImage = themes[themeIndex].gradient;
-            showToast('✨ ' + themes[themeIndex].name + ' ✨');
-            closeDropdownMenu();
-        });
+        applyTheme(themeIndex);
 
         document.getElementById('speedUp').addEventListener('click', () => {
             if (flightDuration === 1.5) {
@@ -1313,7 +1532,7 @@
         const logoutBtn = document.getElementById('logoutBtn');
 
         function checkAuthStatus() {
-            const isRemembered = localStorage.getItem('rahima_garden_remember') === 'true';
+            const isRemembered = safeStorage.getItem('rahima_garden_remember') === 'true';
             if (!isRemembered) {
                 authOverlay.classList.add('show');
                 setTimeout(() => authPasswordInput.focus(), 100);
@@ -1325,9 +1544,9 @@
             if (enteredPass === CORRECT_PASSWORD) {
                 authErrorMsg.textContent = '';
                 if (rememberMeCheckbox.checked) {
-                    localStorage.setItem('rahima_garden_remember', 'true');
+                    safeStorage.setItem('rahima_garden_remember', 'true');
                 } else {
-                    localStorage.removeItem('rahima_garden_remember');
+                    safeStorage.removeItem('rahima_garden_remember');
                 }
                 authOverlay.classList.remove('show');
                 authPasswordInput.value = '';
@@ -1348,7 +1567,7 @@
 
         logoutBtn.addEventListener('click', () => {
             closeDropdownMenu();
-            localStorage.removeItem('rahima_garden_remember');
+            safeStorage.removeItem('rahima_garden_remember');
             authPasswordInput.value = '';
             authErrorMsg.textContent = '';
             rememberMeCheckbox.checked = true;
@@ -1426,8 +1645,8 @@
         });
 
         applyWingBtn.addEventListener('click', () => {
-            const storedLeft = localStorage.getItem('rahima_garden_leftWing');
-            const storedRight = localStorage.getItem('rahima_garden_rightWing');
+            const storedLeft = safeStorage.getItem('rahima_garden_leftWing');
+            const storedRight = safeStorage.getItem('rahima_garden_rightWing');
 
             const finalLeft = pendingWingData.left || storedLeft || pendingWingData.right || storedRight;
             const finalRight = pendingWingData.right || storedRight || pendingWingData.left || storedLeft;
@@ -1435,8 +1654,8 @@
             if (finalLeft && finalRight) {
                 applyWingImage('left', finalLeft);
                 applyWingImage('right', finalRight);
-                localStorage.setItem('rahima_garden_leftWing', finalLeft);
-                localStorage.setItem('rahima_garden_rightWing', finalRight);
+                safeStorage.setItem('rahima_garden_leftWing', finalLeft);
+                safeStorage.setItem('rahima_garden_rightWing', finalRight);
                 showToast('🦋 Wings Updated 🦋', 1800);
             } else {
                 showToast('🦋 Size Updated 🦋', 1600);
@@ -1448,9 +1667,9 @@
         resetWingBtn.addEventListener('click', () => {
             resetWingImage('left');
             resetWingImage('right');
-            localStorage.removeItem('rahima_garden_leftWing');
-            localStorage.removeItem('rahima_garden_rightWing');
-            localStorage.removeItem('rahima_garden_wingSize');
+            safeStorage.removeItem('rahima_garden_leftWing');
+            safeStorage.removeItem('rahima_garden_rightWing');
+            safeStorage.removeItem('rahima_garden_wingSize');
             applyWingSize(DEFAULT_WING_SIZE);
             pendingWingData = { left: null, right: null };
             leftWingContent.innerHTML = '➕';
@@ -1472,13 +1691,13 @@
         const DEFAULT_WING_SIZE = 42;
         const MIN_WING_SIZE = 20;
         const MAX_WING_SIZE = 90;
-        let currentWingSize = parseInt(localStorage.getItem('rahima_garden_wingSize')) || DEFAULT_WING_SIZE;
+        let currentWingSize = parseInt(safeStorage.getItem('rahima_garden_wingSize')) || DEFAULT_WING_SIZE;
 
         function applyWingSize(size) {
             currentWingSize = Math.min(MAX_WING_SIZE, Math.max(MIN_WING_SIZE, parseInt(size) || DEFAULT_WING_SIZE));
             document.documentElement.style.setProperty('--wing-size', currentWingSize + 'px');
             wingSizeInput.value = currentWingSize;
-            localStorage.setItem('rahima_garden_wingSize', currentWingSize);
+            safeStorage.setItem('rahima_garden_wingSize', currentWingSize);
         }
 
         decreaseSizeBtn.addEventListener('click', () => applyWingSize(currentWingSize - 2));
@@ -1488,8 +1707,8 @@
         applyWingSize(currentWingSize);
 
         (function restoreWings() {
-            const savedLeft = localStorage.getItem('rahima_garden_leftWing');
-            const savedRight = localStorage.getItem('rahima_garden_rightWing');
+            const savedLeft = safeStorage.getItem('rahima_garden_leftWing');
+            const savedRight = safeStorage.getItem('rahima_garden_rightWing');
             if (savedLeft) {
                 applyWingImage('left', savedLeft);
                 leftWingContent.innerHTML = `<img src="${savedLeft}" class="preview-img" alt="left wing preview">`;
