@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            --wing-size: 42px;
             --bg-deep: #05020a;
             --bg-gradient: radial-gradient(circle at 50% 12%, #1e0b2e 0%, #0a0314 55%, #030108 100%);
             --glass-bg: rgba(18, 8, 28, 0.75);
@@ -345,8 +346,8 @@
         /* Realistic Butterfly Animation Engine */
         .butterfly-container {
             position: absolute;
-            width: 56px;
-            height: 56px;
+            width: calc(var(--wing-size) * 1.3334);
+            height: calc(var(--wing-size) * 1.3334);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -378,7 +379,7 @@
 
         .wing {
             position: absolute;
-            font-size: 42px; 
+            font-size: var(--wing-size);
             width: 50%;
             height: 100%;
             display: flex;
@@ -677,6 +678,152 @@
             margin-top: 10px;
             min-height: 16px;
         }
+
+        /* Wing Photo (replaces emoji, same visual size) */
+        .wing-photo {
+            width: var(--wing-size);
+            height: var(--wing-size);
+            object-fit: contain;
+            pointer-events: none;
+            -webkit-user-drag: none;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        /* Butterfly Size Control */
+        .wing-size-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .size-control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .size-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 182, 193, 0.35);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+
+        .size-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 107, 139, 0.25);
+        }
+
+        .size-input {
+            width: 64px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            border-radius: 12px;
+            padding: 8px 4px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            outline: none;
+        }
+
+        .size-input:focus {
+            border-color: var(--primary-pink);
+        }
+
+        /* Upload Wing Overlay */
+        .wing-upload-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 210;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            padding: 24px;
+        }
+
+        .wing-upload-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .wing-upload-card {
+            transform: translateY(14px) scale(0.96);
+        }
+
+        .wing-upload-overlay.show .wing-upload-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .wing-upload-slots {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .wing-upload-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-box {
+            width: 74px;
+            height: 74px;
+            border: 2px dashed rgba(255, 182, 193, 0.4);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            transition: border-color 0.25s ease;
+        }
+
+        .upload-box:active {
+            border-color: var(--primary-pink);
+        }
+
+        .upload-box .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+
+        .slot-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .wing-upload-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -699,6 +846,7 @@
             <button class="menu-close-btn" id="closeMenuBtn">✕</button>
         </div>
         <button class="menu-item-btn gold" id="changeWord">🔤 Change Word</button>
+        <button class="menu-item-btn gold" id="uploadWingMenuBtn">📸 Upload Wing</button>
         <button class="menu-item-btn" id="toggleTheme">✨ Atmosphere</button>
         <button class="menu-item-btn" id="speedUp">⚡ Flight Speed</button>
         <button class="menu-item-btn" id="shuffleFlowers">🌸 Refresh Flowers</button>
@@ -722,6 +870,43 @@
     </div>
 
     <div class="info-modal" id="infoModal">✨ WELCOME ✨</div>
+
+    <!-- Upload Wing Overlay -->
+    <div class="wing-upload-overlay" id="wingUploadOverlay">
+        <div class="auth-card wing-upload-card">
+            <span class="auth-icon">🦋</span>
+            <h3>Upload Wing Photos</h3>
+            <div class="wing-upload-slots">
+                <div class="wing-upload-slot">
+                    <label class="upload-box" id="leftWingBox">
+                        <span id="leftWingContent">➕</span>
+                        <input type="file" accept="image/*" id="leftWingInput" style="display:none;">
+                    </label>
+                    <span class="slot-label">Left Wing</span>
+                </div>
+                <div class="wing-upload-slot">
+                    <label class="upload-box" id="rightWingBox">
+                        <span id="rightWingContent">➕</span>
+                        <input type="file" accept="image/*" id="rightWingInput" style="display:none;">
+                    </label>
+                    <span class="slot-label">Right Wing</span>
+                </div>
+            </div>
+            <div class="wing-size-control">
+                <span class="slot-label">Butterfly Size</span>
+                <div class="size-control-row">
+                    <button class="size-btn" id="decreaseSizeBtn" type="button">−</button>
+                    <input type="number" id="wingSizeInput" class="size-input" min="20" max="90" step="2" value="42">
+                    <button class="size-btn" id="increaseSizeBtn" type="button">+</button>
+                </div>
+            </div>
+            <div class="wing-upload-actions">
+                <button class="auth-btn" id="applyWingBtn">Apply Wings</button>
+                <button class="menu-item-btn accent" id="resetWingBtn">↺ Reset to Default</button>
+                <button class="menu-item-btn" id="closeWingUpload">Close</button>
+            </div>
+        </div>
+    </div>
 
     <div class="butterfly-container" id="butterfly">
         <div class="rest-bubble">💤</div>
@@ -958,8 +1143,10 @@
         function startFlight(targetPoint) {
             butterfly.classList.remove('drinking');
 
-            const nextX = targetPoint.x - 28; 
-            const nextY = targetPoint.y - 28;
+            const halfW = butterfly.offsetWidth / 2;
+            const halfH = butterfly.offsetHeight / 2;
+            const nextX = targetPoint.x - halfW;
+            const nextY = targetPoint.y - halfH;
 
             const deltaX = nextX - currentX;
             const deltaY = nextY - currentY;
@@ -1169,6 +1356,149 @@
             setTimeout(() => authPasswordInput.focus(), 100);
             showToast('🔒 Logged Out', 1500);
         });
+
+        // Wing Photo Upload System
+        const wingUploadOverlay = document.getElementById('wingUploadOverlay');
+        const uploadWingMenuBtn = document.getElementById('uploadWingMenuBtn');
+        const closeWingUpload = document.getElementById('closeWingUpload');
+        const leftWingBox = document.getElementById('leftWingBox');
+        const rightWingBox = document.getElementById('rightWingBox');
+        const leftWingInput = document.getElementById('leftWingInput');
+        const rightWingInput = document.getElementById('rightWingInput');
+        const leftWingContent = document.getElementById('leftWingContent');
+        const rightWingContent = document.getElementById('rightWingContent');
+        const applyWingBtn = document.getElementById('applyWingBtn');
+        const resetWingBtn = document.getElementById('resetWingBtn');
+
+        const wingEls = {
+            left: document.querySelector('.wing.left'),
+            right: document.querySelector('.wing.right')
+        };
+
+        let pendingWingData = { left: null, right: null };
+
+        function readFileAsDataURL(file, callback) {
+            const reader = new FileReader();
+            reader.onload = () => callback(reader.result);
+            reader.readAsDataURL(file);
+        }
+
+        function applyWingImage(side, dataUrl) {
+            const wingEl = wingEls[side];
+            if (!wingEl) return;
+            wingEl.innerHTML = `<img src="${dataUrl}" class="wing-photo" alt="wing">`;
+        }
+
+        function resetWingImage(side) {
+            const wingEl = wingEls[side];
+            if (!wingEl) return;
+            wingEl.innerHTML = '🦋';
+        }
+
+        function openWingUploadOverlay() {
+            wingUploadOverlay.classList.add('show');
+            closeDropdownMenu();
+        }
+
+        function closeWingUploadOverlay() {
+            wingUploadOverlay.classList.remove('show');
+        }
+
+        leftWingBox.addEventListener('click', () => leftWingInput.click());
+        rightWingBox.addEventListener('click', () => rightWingInput.click());
+
+        leftWingInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            readFileAsDataURL(file, (dataUrl) => {
+                pendingWingData.left = dataUrl;
+                leftWingContent.innerHTML = `<img src="${dataUrl}" class="preview-img" alt="left wing preview">`;
+            });
+        });
+
+        rightWingInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            readFileAsDataURL(file, (dataUrl) => {
+                pendingWingData.right = dataUrl;
+                rightWingContent.innerHTML = `<img src="${dataUrl}" class="preview-img" alt="right wing preview">`;
+            });
+        });
+
+        applyWingBtn.addEventListener('click', () => {
+            const storedLeft = localStorage.getItem('rahima_garden_leftWing');
+            const storedRight = localStorage.getItem('rahima_garden_rightWing');
+
+            const finalLeft = pendingWingData.left || storedLeft || pendingWingData.right || storedRight;
+            const finalRight = pendingWingData.right || storedRight || pendingWingData.left || storedLeft;
+
+            if (finalLeft && finalRight) {
+                applyWingImage('left', finalLeft);
+                applyWingImage('right', finalRight);
+                localStorage.setItem('rahima_garden_leftWing', finalLeft);
+                localStorage.setItem('rahima_garden_rightWing', finalRight);
+                showToast('🦋 Wings Updated 🦋', 1800);
+            } else {
+                showToast('🦋 Size Updated 🦋', 1600);
+            }
+
+            closeWingUploadOverlay();
+        });
+
+        resetWingBtn.addEventListener('click', () => {
+            resetWingImage('left');
+            resetWingImage('right');
+            localStorage.removeItem('rahima_garden_leftWing');
+            localStorage.removeItem('rahima_garden_rightWing');
+            localStorage.removeItem('rahima_garden_wingSize');
+            applyWingSize(DEFAULT_WING_SIZE);
+            pendingWingData = { left: null, right: null };
+            leftWingContent.innerHTML = '➕';
+            rightWingContent.innerHTML = '➕';
+            showToast('🦋 Default Wings Restored 🦋', 1600);
+            closeWingUploadOverlay();
+        });
+
+        uploadWingMenuBtn.addEventListener('click', openWingUploadOverlay);
+        closeWingUpload.addEventListener('click', closeWingUploadOverlay);
+        wingUploadOverlay.addEventListener('click', (e) => {
+            if (e.target === wingUploadOverlay) closeWingUploadOverlay();
+        });
+
+        // Butterfly Size Control
+        const wingSizeInput = document.getElementById('wingSizeInput');
+        const decreaseSizeBtn = document.getElementById('decreaseSizeBtn');
+        const increaseSizeBtn = document.getElementById('increaseSizeBtn');
+        const DEFAULT_WING_SIZE = 42;
+        const MIN_WING_SIZE = 20;
+        const MAX_WING_SIZE = 90;
+        let currentWingSize = parseInt(localStorage.getItem('rahima_garden_wingSize')) || DEFAULT_WING_SIZE;
+
+        function applyWingSize(size) {
+            currentWingSize = Math.min(MAX_WING_SIZE, Math.max(MIN_WING_SIZE, parseInt(size) || DEFAULT_WING_SIZE));
+            document.documentElement.style.setProperty('--wing-size', currentWingSize + 'px');
+            wingSizeInput.value = currentWingSize;
+            localStorage.setItem('rahima_garden_wingSize', currentWingSize);
+        }
+
+        decreaseSizeBtn.addEventListener('click', () => applyWingSize(currentWingSize - 2));
+        increaseSizeBtn.addEventListener('click', () => applyWingSize(currentWingSize + 2));
+        wingSizeInput.addEventListener('change', () => applyWingSize(wingSizeInput.value));
+
+        applyWingSize(currentWingSize);
+
+        (function restoreWings() {
+            const savedLeft = localStorage.getItem('rahima_garden_leftWing');
+            const savedRight = localStorage.getItem('rahima_garden_rightWing');
+            if (savedLeft) {
+                applyWingImage('left', savedLeft);
+                leftWingContent.innerHTML = `<img src="${savedLeft}" class="preview-img" alt="left wing preview">`;
+            }
+            if (savedRight) {
+                applyWingImage('right', savedRight);
+                rightWingContent.innerHTML = `<img src="${savedRight}" class="preview-img" alt="right wing preview">`;
+            }
+        })();
 
         // Initialize App
         renderLetterGrid(wordLetters[wordIndex]);
