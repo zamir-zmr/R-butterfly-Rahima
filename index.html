@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0d0812">
     <title>Rahima Butterfly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --wing-size: 42px;
             --flower-size: 24px;
-            --bg-deep: #ff6b8b;
+            --bg-deep: #0d0812;
             --glass-bg: rgba(18, 8, 28, 0.75);
             --glass-border: rgba(255, 182, 193, 0.22);
             --glass-border-hover: rgba(255, 182, 193, 0.45);
@@ -54,6 +55,86 @@
             opacity: 0;
             z-index: 0;
             transition: opacity 0.25s ease;
+        }
+
+        /* Professional Loading / Splash Screen */
+        .app-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 18px;
+            background: var(--bg-deep);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .app-loader.loader-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-ring-wrap {
+            position: relative;
+            width: 62px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-ring-wrap::before,
+        .loader-ring-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid transparent;
+        }
+
+        .loader-ring-wrap::before {
+            border-top-color: var(--primary-pink);
+            border-right-color: var(--primary-pink);
+            animation: loaderSpin 0.9s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+        }
+
+        .loader-ring-wrap::after {
+            inset: 10px;
+            border-bottom-color: var(--accent-gold);
+            border-left-color: var(--accent-gold);
+            opacity: 0.75;
+            animation: loaderSpin 1.3s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite reverse;
+        }
+
+        .loader-mark {
+            font-size: 20px;
+            animation: loaderPulse 1.6s ease-in-out infinite;
+        }
+
+        @keyframes loaderSpin {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes loaderPulse {
+            0%, 100% { transform: scale(0.85); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .loader-text {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            animation: loaderTextFade 1.8s ease-in-out infinite;
+        }
+
+        @keyframes loaderTextFade {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
 
         /* Ambient background particles */
@@ -954,6 +1035,12 @@
 </head>
 <body>
 
+    <!-- Professional Loading Screen -->
+    <div class="app-loader" id="appLoader">
+        <div class="loader-ring-wrap"><span class="loader-mark">🦋</span></div>
+        <span class="loader-text">Loading Garden</span>
+    </div>
+
     <div class="vignette-overlay"></div>
     <div class="bg-darkness-overlay" id="bgDarknessOverlay"></div>
 
@@ -1237,9 +1324,17 @@
             safeStorage.setItem('rahima_garden_flowerSize', currentFlowerSize);
         }
 
-        decreaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSize(currentFlowerSize - 2));
-        increaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSize(currentFlowerSize + 2));
-        flowerSizeInput.addEventListener('change', () => applyFlowerSize(flowerSizeInput.value));
+        function applyFlowerSizeAndReflow(size) {
+            applyFlowerSize(size);
+            // Re-lay the flowers so spacing adjusts gradually alongside the new size
+            if (typeof renderLetterGrid === 'function' && wordLetters && wordLetters.length) {
+                renderLetterGrid(wordLetters[wordIndex]);
+            }
+        }
+
+        decreaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSizeAndReflow(currentFlowerSize - 2));
+        increaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSizeAndReflow(currentFlowerSize + 2));
+        flowerSizeInput.addEventListener('change', () => applyFlowerSizeAndReflow(flowerSizeInput.value));
 
         applyFlowerSize(currentFlowerSize);
 
@@ -1248,7 +1343,17 @@
             flowerPositions.length = 0;
 
             const builder = LETTER_BUILDERS[letterChar];
-            const grid = builder ? builder() : perfectRGrid;
+            let grid = builder ? builder() : perfectRGrid;
+
+            // As flowers get bigger, thin the grid out so neighboring flowers
+            // keep a real gap between them instead of stacking on top of each
+            // other. The thinning grows gradually with size, one flower-size
+            // step at a time, instead of jumping straight from tight to sparse.
+            const sizeRatio = currentFlowerSize / DEFAULT_FLOWER_SIZE;
+            const stride = Math.max(1, Math.round(sizeRatio));
+            if (stride > 1) {
+                grid = grid.filter((_, idx) => idx % stride === 0);
+            }
 
             grid.forEach((pos) => {
                 const flowerEl = document.createElement('div');
@@ -1463,7 +1568,15 @@
             themeIndex = i;
             document.body.style.backgroundImage = 'none';
             document.body.style.backgroundColor = themes[i].swatch;
+            document.documentElement.style.backgroundColor = themes[i].swatch;
             bgColorSwatch.style.background = themes[i].swatch;
+            let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+            if (!themeColorMeta) {
+                themeColorMeta = document.createElement('meta');
+                themeColorMeta.name = 'theme-color';
+                document.head.appendChild(themeColorMeta);
+            }
+            themeColorMeta.setAttribute('content', themes[i].swatch);
             safeStorage.setItem('rahima_garden_themeIndex', i);
             showToast('✨ ' + themes[i].name + ' ✨');
             buildColorDropdown();
@@ -1784,6 +1897,20 @@
         
         // Check initial authentication
         checkAuthStatus();
+
+        // Hide the professional loading screen once everything is set up
+        (function hideAppLoader() {
+            const loaderEl = document.getElementById('appLoader');
+            if (!loaderEl) return;
+            const reveal = () => {
+                loaderEl.classList.add('loader-hidden');
+                setTimeout(() => loaderEl.remove(), 550);
+            };
+            // Small minimum display time avoids an abrupt flash on fast loads
+            const minDelay = new Promise(resolve => setTimeout(resolve, 450));
+            const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+            Promise.all([minDelay, fontsReady]).then(reveal).catch(reveal);
+        })();
     </script>
 </body>
 </html>
