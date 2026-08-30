@@ -1031,6 +1031,42 @@
             flex-direction: column;
             gap: 10px;
         }
+
+        .full-butterfly-upload-section {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .full-upload-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px dashed rgba(255, 215, 0, 0.5);
+            border-radius: 14px;
+            background: rgba(255, 215, 0, 0.08);
+            color: var(--accent-gold);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.25s ease, background 0.25s ease;
+        }
+
+        .full-upload-box:active {
+            border-color: var(--accent-gold);
+            background: rgba(255, 215, 0, 0.15);
+        }
+
+        .full-upload-box .full-upload-thumb {
+            width: 34px;
+            height: 34px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -1081,7 +1117,7 @@
             <span class="menu-block-label">🌼 Flower Size</span>
             <div class="size-control-row">
                 <button class="size-btn" id="decreaseFlowerSizeBtn" type="button">−</button>
-                <input type="number" id="flowerSizeInput" class="size-input" min="14" max="44" step="2" value="24">
+                <input type="number" id="flowerSizeInput" class="size-input" min="14" max="35" step="2" value="24">
                 <button class="size-btn" id="increaseFlowerSizeBtn" type="button">+</button>
             </div>
         </div>
@@ -1113,6 +1149,12 @@
     <div class="wing-upload-overlay" id="wingUploadOverlay">
         <div class="auth-card wing-upload-card">
             <span class="auth-icon">🦋</span>
+            <div class="full-butterfly-upload-section">
+                <label class="full-upload-box" id="fullButterflyBox">
+                    <span id="fullButterflyContent">🖼️ Upload Full Butterfly Image</span>
+                    <input type="file" accept="image/*" id="fullButterflyInput" style="display:none;">
+                </label>
+            </div>
             <h3>Upload Wing Photos</h3>
             <div class="wing-upload-slots">
                 <div class="wing-upload-slot">
@@ -1314,7 +1356,7 @@
         const increaseFlowerSizeBtn = document.getElementById('increaseFlowerSizeBtn');
         const DEFAULT_FLOWER_SIZE = 24;
         const MIN_FLOWER_SIZE = 14;
-        const MAX_FLOWER_SIZE = 44;
+        const MAX_FLOWER_SIZE = 35;
         let currentFlowerSize = parseInt(safeStorage.getItem('rahima_garden_flowerSize')) || DEFAULT_FLOWER_SIZE;
 
         function applyFlowerSize(size) {
@@ -1759,6 +1801,9 @@
         const rightWingContent = document.getElementById('rightWingContent');
         const applyWingBtn = document.getElementById('applyWingBtn');
         const resetWingBtn = document.getElementById('resetWingBtn');
+        const fullButterflyBox = document.getElementById('fullButterflyBox');
+        const fullButterflyInput = document.getElementById('fullButterflyInput');
+        const fullButterflyContent = document.getElementById('fullButterflyContent');
 
         const wingEls = {
             left: document.querySelector('.wing.left'),
@@ -1815,6 +1860,47 @@
             });
         });
 
+        function splitFullButterflyImage(dataUrl) {
+            const img = new Image();
+            img.onload = () => {
+                const w = img.naturalWidth;
+                const h = img.naturalHeight;
+                const halfW = Math.floor(w / 2);
+
+                const leftCanvas = document.createElement('canvas');
+                leftCanvas.width = halfW;
+                leftCanvas.height = h;
+                leftCanvas.getContext('2d').drawImage(img, 0, 0, halfW, h, 0, 0, halfW, h);
+
+                const rightCanvas = document.createElement('canvas');
+                const rightW = w - halfW;
+                rightCanvas.width = rightW;
+                rightCanvas.height = h;
+                rightCanvas.getContext('2d').drawImage(img, halfW, 0, rightW, h, 0, 0, rightW, h);
+
+                const leftDataUrl = leftCanvas.toDataURL('image/png');
+                const rightDataUrl = rightCanvas.toDataURL('image/png');
+
+                pendingWingData.left = leftDataUrl;
+                pendingWingData.right = rightDataUrl;
+                leftWingContent.innerHTML = `<img src="${leftDataUrl}" class="preview-img" alt="left wing preview">`;
+                rightWingContent.innerHTML = `<img src="${rightDataUrl}" class="preview-img" alt="right wing preview">`;
+                fullButterflyContent.innerHTML = `<img src="${dataUrl}" class="full-upload-thumb" alt="full butterfly preview"> Full Image Split ✔`;
+                showToast('🦋 Wings Split From Image 🦋', 1800);
+            };
+            img.src = dataUrl;
+        }
+
+        fullButterflyBox.addEventListener('click', () => fullButterflyInput.click());
+
+        fullButterflyInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            readFileAsDataURL(file, (dataUrl) => {
+                splitFullButterflyImage(dataUrl);
+            });
+        });
+
         applyWingBtn.addEventListener('click', () => {
             const storedLeft = safeStorage.getItem('rahima_garden_leftWing');
             const storedRight = safeStorage.getItem('rahima_garden_rightWing');
@@ -1845,6 +1931,8 @@
             pendingWingData = { left: null, right: null };
             leftWingContent.innerHTML = '➕';
             rightWingContent.innerHTML = '➕';
+            fullButterflyContent.innerHTML = '🖼️ Upload Full Butterfly Image';
+            fullButterflyInput.value = '';
             showToast('🦋 Default Wings Restored 🦋', 1600);
             closeWingUploadOverlay();
         });
