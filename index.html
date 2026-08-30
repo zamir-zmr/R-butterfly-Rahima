@@ -886,14 +886,38 @@
             min-height: 16px;
         }
 
-        /* Wing Photo (replaces emoji, same visual size) */
+        /* Wing Photo (replaces emoji, same visual size).
+           Height-only scaling (no forced square + object-fit:contain) avoids the
+           transparent letterbox padding that was leaving a faint gap at the
+           center seam when a split full-image was used. */
         .wing-photo {
-            width: var(--wing-size);
             height: var(--wing-size);
+            width: auto;
+            max-width: none;
+            display: block;
             object-fit: contain;
             pointer-events: none;
             -webkit-user-drag: none;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        /* When a split full-image is applied, anchor each half to the center line
+           (instead of the outer edge used for the plain emoji) so the two halves
+           join seamlessly with no visible gap. */
+        .wing.left.has-photo {
+            justify-content: flex-end;
+        }
+
+        .wing.right.has-photo {
+            justify-content: flex-start;
+        }
+
+        .wing.left.has-photo .wing-photo {
+            margin-right: 0px;
+        }
+
+        .wing.right.has-photo .wing-photo {
+            margin-left: 0px;
         }
 
         /* Butterfly Size Control */
@@ -1356,7 +1380,7 @@
         const increaseFlowerSizeBtn = document.getElementById('increaseFlowerSizeBtn');
         const DEFAULT_FLOWER_SIZE = 24;
         const MIN_FLOWER_SIZE = 14;
-        const MAX_FLOWER_SIZE = 35;
+        const MAX_FLOWER_SIZE = 44;
         let currentFlowerSize = parseInt(safeStorage.getItem('rahima_garden_flowerSize')) || DEFAULT_FLOWER_SIZE;
 
         function applyFlowerSize(size) {
@@ -1822,12 +1846,14 @@
             const wingEl = wingEls[side];
             if (!wingEl) return;
             wingEl.innerHTML = `<img src="${dataUrl}" class="wing-photo" alt="wing">`;
+            wingEl.classList.add('has-photo');
         }
 
         function resetWingImage(side) {
             const wingEl = wingEls[side];
             if (!wingEl) return;
             wingEl.innerHTML = '🦋';
+            wingEl.classList.remove('has-photo');
         }
 
         function openWingUploadOverlay() {
