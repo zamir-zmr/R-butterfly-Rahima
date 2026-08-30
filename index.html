@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#0d0812">
     <title>Rahima Butterfly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <style>
         :root {
             --wing-size: 42px;
@@ -1091,6 +1094,203 @@
             object-fit: cover;
             border-radius: 8px;
         }
+
+        /* Firebase Gallery Overlay */
+        .firebase-gallery-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.97);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            z-index: 260;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .firebase-gallery-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .fb-gallery-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid rgba(255, 182, 193, 0.2);
+        }
+
+        .fb-gallery-title {
+            font-family: 'Cinzel', serif;
+            font-size: 17px;
+            color: var(--text-main, #fff);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fb-gallery-close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .fb-gallery-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 14px 18px 8px;
+        }
+
+        .fb-upload-multi-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 14px;
+            border-radius: 14px;
+            border: 2px dashed rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.08);
+            color: var(--accent-gold, #ffd700);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .fb-gallery-status {
+            padding: 6px 18px 4px;
+            font-size: 12px;
+            color: var(--text-muted, #cbb2c2);
+            min-height: 16px;
+        }
+
+        .fb-gallery-grid, .fb-picker-grid {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 8px 18px 30px;
+        }
+
+        .fb-gallery-item {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 182, 193, 0.15);
+        }
+
+        .fb-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .fb-gallery-item-actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .fb-item-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(3, 1, 8, 0.75);
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fb-item-btn.danger {
+            color: #ff8fa3;
+        }
+
+        .fb-gallery-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--text-muted, #cbb2c2);
+            font-size: 13px;
+            padding: 40px 12px;
+        }
+
+        .fb-replace-input {
+            display: none;
+        }
+
+        /* Choose from Firebase (inside wing upload modal) */
+        .fb-choose-wing-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 11px 14px;
+            margin-bottom: 16px;
+            border-radius: 14px;
+            border: 2px dashed rgba(255, 107, 139, 0.45);
+            background: rgba(255, 107, 139, 0.08);
+            color: var(--text-main, #fff);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .fb-picker-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.96);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 280;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fb-picker-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .fb-picker-item {
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .fb-picker-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .fb-picker-item:active {
+            border-color: var(--primary-pink, #ff6b8b);
+        }
     </style>
 </head>
 <body>
@@ -1121,6 +1321,7 @@
         </div>
         <button class="menu-item-btn gold" id="changeWord">🔤 Change Word</button>
         <button class="menu-item-btn gold" id="uploadWingMenuBtn">📸 Upload Wing</button>
+        <button class="menu-item-btn gold" id="firebaseGalleryMenuBtn">🔥 Firebase Upload Photo</button>
 
         <div class="bg-color-picker">
             <button class="menu-item-btn bg-color-btn" id="bgColorBtn" type="button">
@@ -1179,6 +1380,7 @@
                     <input type="file" accept="image/*" id="fullButterflyInput" style="display:none;">
                 </label>
             </div>
+            <button class="fb-choose-wing-btn" id="chooseFirebaseWingBtn" type="button">🔥 Choose From Firebase</button>
             <h3>Upload Wing Photos</h3>
             <div class="wing-upload-slots">
                 <div class="wing-upload-slot">
@@ -1209,6 +1411,37 @@
                 <button class="menu-item-btn accent" id="resetWingBtn">↺ Reset to Default</button>
                 <button class="menu-item-btn" id="closeWingUpload">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Firebase Gallery Overlay -->
+    <div class="firebase-gallery-overlay" id="firebaseGalleryOverlay">
+        <div class="fb-gallery-header">
+            <span class="fb-gallery-title">🔥 Firebase Photos</span>
+            <button class="fb-gallery-close-btn" id="fbGalleryCloseBtn">✕</button>
+        </div>
+        <div class="fb-gallery-toolbar">
+            <label class="fb-upload-multi-btn" id="fbUploadMultiBox">
+                ⬆️ Upload Photos From Gallery
+                <input type="file" accept="image/*" multiple id="fbUploadMultiInput" style="display:none;">
+            </label>
+        </div>
+        <div class="fb-gallery-status" id="fbGalleryStatus"></div>
+        <div class="fb-gallery-grid" id="fbGalleryGrid">
+            <div class="fb-gallery-empty">No photos yet. Upload from your gallery.</div>
+        </div>
+        <input type="file" accept="image/*" id="fbReplaceInput" class="fb-replace-input">
+    </div>
+
+    <!-- Firebase Photo Picker (for wing selection) -->
+    <div class="fb-picker-overlay" id="fbPickerOverlay">
+        <div class="fb-gallery-header">
+            <span class="fb-gallery-title">🦋 Choose Wing Photo</span>
+            <button class="fb-gallery-close-btn" id="fbPickerCloseBtn">✕</button>
+        </div>
+        <div class="fb-gallery-status" id="fbPickerStatus"></div>
+        <div class="fb-picker-grid" id="fbPickerGrid">
+            <div class="fb-gallery-empty">No Firebase photos yet. Upload some first.</div>
         </div>
     </div>
 
@@ -2003,6 +2236,220 @@
                 rightWingContent.innerHTML = `<img src="${savedRight}" class="preview-img" alt="right wing preview">`;
             }
         })();
+
+        // ---------- Firebase Gallery (Multi Photo Upload / Manage / Pick) ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyA0rirztMO13FyXcKYz1aEB1ERYH-HQUbA",
+            authDomain: "sweethouse-e3e49.firebaseapp.com",
+            databaseURL: "https://sweethouse-e3e49-default-rtdb.firebaseio.com",
+            projectId: "sweethouse-e3e49",
+            storageBucket: "sweethouse-e3e49.firebasestorage.app",
+            messagingSenderId: "579322038108",
+            appId: "1:579322038108:web:166b7fdb103080f56d6399"
+        };
+
+        let fbDb = null, fbStorage = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            fbDb = firebase.database();
+            fbStorage = firebase.storage();
+        } catch (err) {
+            console.error('Firebase init failed', err);
+        }
+
+        const FB_PHOTOS_PATH = 'butterflyGalleryPhotos';
+        const FB_STORAGE_FOLDER = 'butterfly_gallery';
+        let fbPhotosCache = {};
+
+        function fbSetStatus(el, text) {
+            if (el) el.textContent = text;
+        }
+
+        function fbRenderGalleryGrid() {
+            const grid = document.getElementById('fbGalleryGrid');
+            const keys = Object.keys(fbPhotosCache);
+            if (!keys.length) {
+                grid.innerHTML = '<div class="fb-gallery-empty">No photos yet. Upload from your gallery.</div>';
+                return;
+            }
+            grid.innerHTML = keys.map(key => {
+                const p = fbPhotosCache[key];
+                return `
+                    <div class="fb-gallery-item" data-key="${key}">
+                        <img src="${p.url}" alt="photo" loading="lazy">
+                        <div class="fb-gallery-item-actions">
+                            <button class="fb-item-btn" data-action="replace" data-key="${key}" title="Modify">✏️</button>
+                            <button class="fb-item-btn danger" data-action="delete" data-key="${key}" title="Delete">🗑️</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function fbRenderPickerGrid() {
+            const grid = document.getElementById('fbPickerGrid');
+            const keys = Object.keys(fbPhotosCache);
+            if (!keys.length) {
+                grid.innerHTML = '<div class="fb-gallery-empty">No Firebase photos yet. Upload some first.</div>';
+                return;
+            }
+            grid.innerHTML = keys.map(key => {
+                const p = fbPhotosCache[key];
+                return `<div class="fb-picker-item" data-key="${key}"><img src="${p.url}" alt="photo" loading="lazy"></div>`;
+            }).join('');
+        }
+
+        function fbListenGallery() {
+            if (!fbDb) return;
+            fbDb.ref(FB_PHOTOS_PATH).on('value', (snapshot) => {
+                fbPhotosCache = snapshot.val() || {};
+                fbRenderGalleryGrid();
+                fbRenderPickerGrid();
+            });
+        }
+
+        function fbUploadFile(file) {
+            return new Promise((resolve, reject) => {
+                if (!fbStorage || !fbDb) return reject(new Error('Firebase not ready'));
+                const key = fbDb.ref(FB_PHOTOS_PATH).push().key;
+                const storagePath = `${FB_STORAGE_FOLDER}/${key}.jpg`;
+                const storageRef = fbStorage.ref(storagePath);
+                storageRef.put(file).then(() => storageRef.getDownloadURL()).then((url) => {
+                    return fbDb.ref(`${FB_PHOTOS_PATH}/${key}`).set({ url, storagePath, timestamp: Date.now() });
+                }).then(() => resolve(key)).catch(reject);
+            });
+        }
+
+        function fbDeletePhoto(key) {
+            const p = fbPhotosCache[key];
+            if (!p || !fbDb) return;
+            const tasks = [fbDb.ref(`${FB_PHOTOS_PATH}/${key}`).remove()];
+            if (p.storagePath && fbStorage) {
+                tasks.push(fbStorage.ref(p.storagePath).delete().catch(() => {}));
+            }
+            Promise.all(tasks).then(() => showToast('🔥 Photo Deleted 🔥', 1400));
+        }
+
+        function fbReplacePhoto(key, file) {
+            const p = fbPhotosCache[key];
+            if (!p || !p.storagePath || !fbStorage || !fbDb) return;
+            const storageRef = fbStorage.ref(p.storagePath);
+            storageRef.put(file).then(() => storageRef.getDownloadURL()).then((url) => {
+                return fbDb.ref(`${FB_PHOTOS_PATH}/${key}`).update({ url, timestamp: Date.now() });
+            }).then(() => showToast('🔥 Photo Updated 🔥', 1400)).catch((err) => {
+                console.error(err);
+                showToast('⚠️ Update Failed', 1400);
+            });
+        }
+
+        const firebaseGalleryOverlay = document.getElementById('firebaseGalleryOverlay');
+        const firebaseGalleryMenuBtn = document.getElementById('firebaseGalleryMenuBtn');
+        const fbGalleryCloseBtn = document.getElementById('fbGalleryCloseBtn');
+        const fbUploadMultiBox = document.getElementById('fbUploadMultiBox');
+        const fbUploadMultiInput = document.getElementById('fbUploadMultiInput');
+        const fbGalleryStatus = document.getElementById('fbGalleryStatus');
+        const fbGalleryGrid = document.getElementById('fbGalleryGrid');
+        const fbReplaceInput = document.getElementById('fbReplaceInput');
+        let fbReplaceTargetKey = null;
+
+        function openFirebaseGallery() {
+            firebaseGalleryOverlay.classList.add('show');
+            closeDropdownMenu();
+        }
+        function closeFirebaseGallery() {
+            firebaseGalleryOverlay.classList.remove('show');
+        }
+
+        firebaseGalleryMenuBtn.addEventListener('click', openFirebaseGallery);
+        fbGalleryCloseBtn.addEventListener('click', closeFirebaseGallery);
+        firebaseGalleryOverlay.addEventListener('click', (e) => {
+            if (e.target === firebaseGalleryOverlay) closeFirebaseGallery();
+        });
+
+        fbUploadMultiBox.addEventListener('click', () => fbUploadMultiInput.click());
+        fbUploadMultiInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            fbSetStatus(fbGalleryStatus, `Uploading 0/${files.length}...`);
+            let done = 0;
+            for (const file of files) {
+                try {
+                    await fbUploadFile(file);
+                } catch (err) {
+                    console.error(err);
+                }
+                done++;
+                fbSetStatus(fbGalleryStatus, `Uploading ${done}/${files.length}...`);
+            }
+            fbSetStatus(fbGalleryStatus, `✔ Uploaded ${done}/${files.length}`);
+            showToast('🔥 Photos Uploaded 🔥', 1600);
+            fbUploadMultiInput.value = '';
+            setTimeout(() => fbSetStatus(fbGalleryStatus, ''), 2500);
+        });
+
+        fbGalleryGrid.addEventListener('click', (e) => {
+            const btn = e.target.closest('.fb-item-btn');
+            if (!btn) return;
+            const key = btn.dataset.key;
+            const action = btn.dataset.action;
+            if (action === 'delete') {
+                fbDeletePhoto(key);
+            } else if (action === 'replace') {
+                fbReplaceTargetKey = key;
+                fbReplaceInput.click();
+            }
+        });
+
+        fbReplaceInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && fbReplaceTargetKey) {
+                fbReplacePhoto(fbReplaceTargetKey, file);
+            }
+            fbReplaceInput.value = '';
+            fbReplaceTargetKey = null;
+        });
+
+        // ---------- Firebase Picker (choose photo, auto-split into wings) ----------
+        const fbPickerOverlay = document.getElementById('fbPickerOverlay');
+        const fbPickerCloseBtn = document.getElementById('fbPickerCloseBtn');
+        const fbPickerGrid = document.getElementById('fbPickerGrid');
+        const fbPickerStatus = document.getElementById('fbPickerStatus');
+        const chooseFirebaseWingBtn = document.getElementById('chooseFirebaseWingBtn');
+
+        function openFirebasePicker() {
+            fbPickerOverlay.classList.add('show');
+        }
+        function closeFirebasePicker() {
+            fbPickerOverlay.classList.remove('show');
+        }
+
+        chooseFirebaseWingBtn.addEventListener('click', openFirebasePicker);
+        fbPickerCloseBtn.addEventListener('click', closeFirebasePicker);
+        fbPickerOverlay.addEventListener('click', (e) => {
+            if (e.target === fbPickerOverlay) closeFirebasePicker();
+        });
+
+        fbPickerGrid.addEventListener('click', (e) => {
+            const item = e.target.closest('.fb-picker-item');
+            if (!item) return;
+            const key = item.dataset.key;
+            const p = fbPhotosCache[key];
+            if (!p) return;
+            fbSetStatus(fbPickerStatus, 'Splitting wings...');
+            fetch(p.url).then(r => r.blob()).then(blob => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    splitFullButterflyImage(reader.result);
+                    fbSetStatus(fbPickerStatus, '');
+                    closeFirebasePicker();
+                };
+                reader.readAsDataURL(blob);
+            }).catch((err) => {
+                console.error(err);
+                fbSetStatus(fbPickerStatus, '⚠️ Could not load photo');
+            });
+        });
+
+        fbListenGallery();
 
         // Initialize App
         renderLetterGrid(wordLetters[wordIndex]);
