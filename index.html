@@ -137,6 +137,59 @@
             50% { opacity: 1; }
         }
 
+        /* ── Balloon Animation ── */
+        .balloon-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 9990;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .balloon-layer.fade-out {
+            animation: balloonLayerFadeOut 1.2s ease-in forwards;
+        }
+
+        @keyframes balloonLayerFadeOut {
+            0%   { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .balloon-wrap {
+            position: absolute;
+            bottom: -160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: balloonRise linear forwards;
+        }
+
+        @keyframes balloonRise {
+            0%   { transform: translateY(0)   translateX(0); opacity: 0; }
+            8%   { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(-115vh) translateX(var(--sway)); opacity: 0; }
+        }
+
+        .balloon-heart {
+            font-size: 54px;
+            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.4));
+            animation: balloonSway ease-in-out infinite alternate;
+        }
+
+        @keyframes balloonSway {
+            0%   { transform: rotate(-6deg) scale(1); }
+            100% { transform: rotate(6deg)  scale(1.04); }
+        }
+
+        .balloon-string {
+            width: 2px;
+            height: 130px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.15));
+            border-radius: 2px;
+            margin-top: -4px;
+        }
+
         /* Ambient background particles */
         .ambient-particle {
             position: absolute;
@@ -1716,13 +1769,53 @@
             closeDropdownMenu();
         });
 
-        document.getElementById('changeWord').addEventListener('click', () => {
+        function goNextLetter() {
             wordIndex = (wordIndex + 1) % wordLetters.length;
             const letter = wordLetters[wordIndex];
             renderLetterGrid(letter);
             showToast('✨ ' + letter + ' ✨', 1400);
+        }
+
+        function goPrevLetter() {
+            wordIndex = (wordIndex - 1 + wordLetters.length) % wordLetters.length;
+            const letter = wordLetters[wordIndex];
+            renderLetterGrid(letter);
+            showToast('✨ ' + letter + ' ✨', 1400);
+        }
+
+        document.getElementById('changeWord').addEventListener('click', () => {
+            goNextLetter();
             closeDropdownMenu();
         });
+
+        // Swipe left = next letter, swipe right = previous letter
+        (function setupSwipe() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            const SWIPE_THRESHOLD = 50;
+            const VERTICAL_LIMIT  = 80;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+                if (Math.abs(dy) > VERTICAL_LIMIT) return;
+                // Ignore if any overlay / menu is open
+                const menuOpen = document.getElementById('topMenuDropdown').classList.contains('open');
+                const overlayOpen = document.getElementById('authOverlay').classList.contains('show');
+                const loveOpen = document.getElementById('loveOverlay').classList.contains('show');
+                const wingOpen = document.getElementById('wingUploadOverlay').classList.contains('show');
+                if (menuOpen || overlayOpen || loveOpen || wingOpen) return;
+
+                if (dx < 0) goNextLetter();   // left swipe → next
+                else        goPrevLetter();   // right swipe → prev
+            }, { passive: true });
+        })();
 
         function celebrateBurst() {
             const pieces = ['💖', '💗', '✨', '🌸', '💐', '🌷'];
@@ -2002,6 +2095,51 @@
                 rightWingContent.innerHTML = `<img src="${savedRight}" class="preview-img" alt="right wing preview">`;
             }
         })();
+
+        // ── Balloon Animation ──
+        function launchBalloons() {
+            const colors = ['❤️','🧡','💛','💚','💙','💜','🩷'];
+            const layer = document.createElement('div');
+            layer.className = 'balloon-layer';
+            document.body.appendChild(layer);
+
+            colors.forEach((emoji, i) => {
+                const leftPct = 8 + (i * 12) + (Math.random() * 6 - 3);
+                const duration = 5.5 + Math.random() * 2.5;
+                const delay    = i * 0.35 + Math.random() * 0.2;
+                const swayPx   = (Math.random() * 60 - 30);
+                const swayDur  = (1.8 + Math.random() * 1.2) + 's';
+
+                const wrap = document.createElement('div');
+                wrap.className = 'balloon-wrap';
+                wrap.style.left = leftPct + '%';
+                wrap.style.animationDuration = duration + 's';
+                wrap.style.animationDelay    = delay + 's';
+                wrap.style.setProperty('--sway', swayPx + 'px');
+
+                const heart = document.createElement('div');
+                heart.className = 'balloon-heart';
+                heart.textContent = emoji;
+                heart.style.animationDuration = swayDur;
+
+                const string = document.createElement('div');
+                string.className = 'balloon-string';
+
+                wrap.appendChild(heart);
+                wrap.appendChild(string);
+                layer.appendChild(wrap);
+            });
+
+            // Fade out entire layer after all balloons have risen
+            const totalTime = (6 * 0.35 + 2.5 + 5.5 + 8) * 1000;
+            setTimeout(() => {
+                layer.classList.add('fade-out');
+                setTimeout(() => layer.remove(), 1300);
+            }, totalTime - 1400);
+        }
+
+        // Auto-launch on page load after 1.8s
+        setTimeout(launchBalloons, 1800);
 
         // Initialize App
         renderLetterGrid(wordLetters[wordIndex]);
