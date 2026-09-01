@@ -1285,7 +1285,7 @@
             <span class="menu-title">Garden Menu</span>
             <button class="menu-close-btn" id="closeMenuBtn">✕</button>
         </div>
-        <button class="menu-item-btn gold" id="changeWord">🔤 Change Word</button>
+  
         <button class="menu-item-btn gold" id="wordLayoutBtn">📝 Word Layout</button>
         <button class="menu-item-btn gold" id="uploadWingMenuBtn">📸 Upload Butterfly</button>
 
@@ -2190,10 +2190,10 @@
         // init — must be after renderLetterGrid is defined
         switchToWord(0);
 
-        document.getElementById('changeWord').addEventListener('click', () => {
-            goNextLetter();
-            closeDropdownMenu();
-        });
+        // document.getElementById('changeWord').addEventListener('click', () => {
+        //     goNextLetter();
+        //     closeDropdownMenu();
+        // });
 
         // ── Word Layout Overlay ──
         const wordLayoutOverlay = document.getElementById('wordLayoutOverlay');
