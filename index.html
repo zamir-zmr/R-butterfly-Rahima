@@ -1510,6 +1510,51 @@
             };
         })();
 
+        // ── Durable IndexedDB-backed backup store ──
+        // Some mobile WebViews clear or sandbox localStorage between app
+        // restarts even though it "works" during the live session. IndexedDB
+        // is far more durable in those environments, so every write is
+        // mirrored there and used to recover data on next launch.
+        const durableDB = (function() {
+            let dbPromise = null;
+            function openDB() {
+                if (dbPromise) return dbPromise;
+                dbPromise = new Promise((resolve) => {
+                    try {
+                        const req = window.indexedDB.open('rahimaGardenDB', 1);
+                        req.onupgradeneeded = () => {
+                            try { req.result.createObjectStore('kv'); } catch (e) {}
+                        };
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => resolve(null);
+                    } catch (e) { resolve(null); }
+                });
+                return dbPromise;
+            }
+            return {
+                async set(key, value) {
+                    try {
+                        const db = await openDB();
+                        if (!db) return;
+                        const tx = db.transaction('kv', 'readwrite');
+                        tx.objectStore('kv').put({ value: value, ts: Date.now() }, key);
+                    } catch (e) {}
+                },
+                async get(key) {
+                    try {
+                        const db = await openDB();
+                        if (!db) return null;
+                        return await new Promise((resolve) => {
+                            const tx = db.transaction('kv', 'readonly');
+                            const req = tx.objectStore('kv').get(key);
+                            req.onsuccess = () => resolve(req.result || null);
+                            req.onerror = () => resolve(null);
+                        });
+                    } catch (e) { return null; }
+                }
+            };
+        })();
+
         // Ambient background particles
         for (let i = 0; i < 40; i++) {
             const particle = document.createElement('div');
@@ -2052,11 +2097,36 @@
         }
 
         function saveWordList(list) {
-            safeStorage.setItem('rahima_garden_wordList', JSON.stringify(list));
+            const raw = JSON.stringify(list);
+            safeStorage.setItem('rahima_garden_wordList', raw);
+            durableDB.set('rahima_garden_wordList', raw);
         }
 
         let customWordList = loadWordList();
         let activeWordIdx  = 0;
+
+        // Recover from the durable backup if it holds a list localStorage
+        // doesn't have (e.g. localStorage was reset by the WebView between
+        // app launches but IndexedDB survived).
+        (async function recoverWordListFromDurableStore() {
+            const rec = await durableDB.get('rahima_garden_wordList');
+            if (!rec || !rec.value) return;
+            try {
+                const parsed = JSON.parse(rec.value);
+                if (!Array.isArray(parsed) || !parsed.length) return;
+                const currentRaw = safeStorage.getItem('rahima_garden_wordList');
+                const sameAsCurrent = currentRaw === rec.value;
+                if (sameAsCurrent) return;
+                // Prefer the durable copy — it's the one more likely to have
+                // survived a restart intact.
+                customWordList = parsed;
+                safeStorage.setItem('rahima_garden_wordList', rec.value);
+                switchToWord(0);
+                if (document.getElementById('wordLayoutOverlay').style.display === 'flex') {
+                    renderWordLayoutList();
+                }
+            } catch (e) {}
+        })();
 
         function getLettersForWord(word) {
             return word.toUpperCase().split('').filter(c => VALID_LETTERS.has(c));
