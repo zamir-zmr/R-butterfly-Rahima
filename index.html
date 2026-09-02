@@ -1,2148 +1,2668 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Zaina Parveen - Photo Gallery</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Sacramento&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Rahima Butterfly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wing-size: 42px;
+            --flower-size: 24px;
+            --bg-deep: #0d0812;
+            --glass-bg: rgba(18, 8, 28, 0.75);
+            --glass-border: rgba(255, 182, 193, 0.22);
+            --glass-border-hover: rgba(255, 182, 193, 0.45);
+            --primary-pink: #ff6b8b;
+            --accent-gold: #ffd700;
+            --text-main: #fff5f7;
+            --text-muted: #d4b5c9;
+        }
 
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
-  html,body { height:100%; background:#0f0a12; font-family:'Poppins', sans-serif; overflow:hidden; }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
 
-  /* Background Floating Sparkles Pattern */
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background: radial-gradient(circle at 20% 20%, rgba(255, 105, 180, 0.12), transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(244, 114, 182, 0.1), transparent 40%);
-    pointer-events: none; z-index: 0;
-  }
+        input, textarea {
+            user-select: text;
+            -webkit-user-select: text;
+        }
 
-  /* Header Design */
-  #header {
-    position:fixed; top:0; left:0; right:0; height:64px;
-    background: transparent;
-    box-shadow: none;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 16px; z-index:50;
-    border-bottom: none;
-    will-change: transform;
-    overflow: visible;
-  }
-  #header .title-area { display: flex; align-items: center; gap: 8px; position: relative; z-index: 2; }
-  #header .title {
-    color:#ffb6c1; font-family: 'Sacramento', cursive; font-size:28px; font-weight:700;
-    text-shadow: 0 0 10px rgba(255, 182, 193, 0.4);
-    animation: pulseTitle 3s infinite ease-in-out;
-  }
-  #rightControls { position: relative; z-index: 2; }
-  #addBtn { position: relative; z-index: 1; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-deep);
+            background-image: none;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            inset: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            transition: background-color 1s ease;
+            color-scheme: dark;
+        }
 
-  /* ===== Photo-Butterfly System ===== */
-  #pbSettingsBtn {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,182,193,0.3);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 3;
-  }
-  #pbSettingsBtn:active { transform: translate(-50%, -50%) scale(0.9); background: rgba(255,107,139,0.25); }
+        /* Cinematic vignette removed so the chosen solid background color stays uniform */
+        .vignette-overlay {
+            display: none;
+        }
 
-  /* Flying photo-butterflies on the home screen */
-  #pbFlyingLayer { position: fixed; inset: 0; pointer-events: none; z-index: 55; overflow: visible; }
-  .pb-flying {
-    position: absolute;
-    width: calc(var(--pb-size, 42px) * 1.3334);
-    height: calc(var(--pb-size, 42px) * 1.3334);
-    display: flex; align-items: center; justify-content: center;
-    transform-origin: center center;
-    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.55));
-    will-change: left, top, transform;
-  }
-  .pb-wing-layer { position: absolute; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; perspective: 220px; }
-  .pb-wing { position: absolute; font-size: var(--pb-size, 42px); width: 50%; height: 100%; display: flex; align-items: center; }
-  .pb-wing.pb-left { left: 0; justify-content: flex-end; transform-origin: right center; animation: pbFlapLeft var(--flap-dur, 0.32s) ease-in-out infinite alternate; }
-  .pb-wing.pb-right { right: 0; justify-content: flex-start; transform-origin: left center; animation: pbFlapRight var(--flap-dur, 0.32s) ease-in-out infinite alternate; }
+        /* Darkness/opacity overlay - lets the user dim the chosen solid color themselves */
+        .bg-darkness-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: #000;
+            opacity: 0;
+            z-index: 0;
+            transition: opacity 0.25s ease;
+        }
 
-  /* Speed controller bar, fixed just under the header */
-  #pbSpeedBar {
-    position: fixed; top: 64px; left: 0; right: 0; height: 34px; z-index: 35;
-    background: rgba(20,12,28,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    display: flex; align-items: center; gap: 10px; padding: 0 16px;
-    border-bottom: 1px solid rgba(255,182,193,0.1);
-  }
-  .pb-speed-icon { font-size: 13px; flex-shrink: 0; opacity: 0.85; }
-  #pbSpeedSlider {
-    flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px;
-    background: rgba(255,182,193,0.25); outline: none; margin: 0;
-  }
-  #pbSpeedSlider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
-    background: linear-gradient(135deg,#ff758c,#ff7eb3); cursor: pointer;
-    box-shadow: 0 0 8px rgba(255,118,140,0.6);
-  }
-  #pbSpeedSlider::-moz-range-thumb {
-    width: 16px; height: 16px; border-radius: 50%; border: none;
-    background: linear-gradient(135deg,#ff758c,#ff7eb3); cursor: pointer;
-  }
-  @keyframes pbFlapLeft { 0% { transform: scaleX(1) rotateY(0deg); } 100% { transform: scaleX(0.15) rotateY(75deg); } }
-  @keyframes pbFlapRight { 0% { transform: scaleX(1) rotateY(0deg); } 100% { transform: scaleX(0.15) rotateY(-75deg); } }
-  .pb-wing-photo { height: var(--pb-size, 42px); width: auto; max-width: none; display: block; object-fit: contain; pointer-events: none; -webkit-user-drag: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        /* Professional Loading / Splash Screen */
+        .app-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 18px;
+            background: var(--bg-deep);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
 
-  /* Butterfly List overlay (cyan "Word Layout" style) */
-  .pb-list-overlay {
-    display: none; position: fixed; inset: 0; z-index: 400;
-    background: #b2ebf2; flex-direction: column; overflow: hidden;
-  }
-  .pb-list-overlay.show { display: flex; }
-  .pb-list-header {
-    display: flex; align-items: center; justify-content: space-between;
-    background: #00bcd4; padding: 14px 16px; flex-shrink: 0;
-    padding-top: max(14px, env(safe-area-inset-top));
-  }
-  .pb-list-title { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; color: #fff; letter-spacing: 2px; }
-  .pb-list-close { background: none; border: none; cursor: pointer; font-size: 22px; color: #fff; font-weight: 700; line-height: 1; padding: 0 4px; }
-  .pb-list-addrow { padding: 14px 14px 10px; flex-shrink: 0; background: #b2ebf2; }
-  .pb-list-addbtn {
-    width: 100%; background: #00bcd4; color: #fff; border: none; border-radius: 10px;
-    padding: 12px 16px; font-size: 14px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer;
-  }
-  .pb-list-body {
-    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-    padding: 4px 14px 20px; display: flex; flex-direction: column; gap: 10px;
-  }
-  .pb-row {
-    display: flex; align-items: center; gap: 10px; background: #fff;
-    border: 2px solid #00bcd4; border-radius: 14px; padding: 10px 14px;
-  }
-  .pb-row-thumb {
-    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-    background: #e0f7fa; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; overflow: hidden;
-  }
-  .pb-row-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .pb-row-label { flex: 1; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 600; color: #00838f; }
-  .pb-row-btn { background: none; border: none; cursor: pointer; font-size: 19px; padding: 0 4px; flex-shrink: 0; }
+        .app-loader.loader-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
 
-  /* Modify Butterfly overlay (dark upload modal) */
-  .pb-modify-overlay {
-    position: fixed; inset: 0; z-index: 410; background: rgba(3,1,8,0.9);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.35s ease; padding: 24px;
-  }
-  .pb-modify-overlay.show { opacity: 1; pointer-events: auto; }
-  .pb-modify-card {
-    background: rgba(255,255,255,0.06); backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,182,193,0.35); border-radius: 26px;
-    padding: 26px 22px 22px; max-width: 320px; width: 100%; text-align: center;
-    box-shadow: 0 24px 70px rgba(0,0,0,0.8);
-    transform: translateY(14px) scale(0.96); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
-  }
-  .pb-modify-overlay.show .pb-modify-card { transform: translateY(0) scale(1); }
-  .pb-modify-icon { font-size: 30px; margin-bottom: 6px; display: block; }
-  .pb-modify-heading { font-family: 'Poppins', sans-serif; color: #ffb6c1; margin: 0 0 16px; font-size: 15px; letter-spacing: 0.5px; }
-  .pb-wing-heading { font-family: 'Poppins', sans-serif; color: #fff; margin: 0 0 12px; font-size: 13px; font-weight: 600; }
-  .pb-full-upload-section { width: 100%; margin-bottom: 16px; }
-  .pb-full-upload-box {
-    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
-    padding: 12px 14px; border: 2px dashed rgba(255,215,0,0.5); border-radius: 14px;
-    background: rgba(255,215,0,0.08); color: #ffd700; font-size: 14px; font-weight: 600;
-    cursor: pointer; text-align: center; transition: border-color 0.25s ease, background 0.25s ease;
-  }
-  .pb-full-upload-box:active { border-color: #ffd700; background: rgba(255,215,0,0.15); }
-  .pb-full-upload-box .pb-full-thumb { width: 30px; height: 30px; object-fit: cover; border-radius: 8px; vertical-align: middle; margin-right: 6px; }
-  .pb-wing-slots { display: flex; gap: 6px; justify-content: center; margin-bottom: 18px; }
-  .pb-wing-slot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .pb-upload-box {
-    width: 94px; height: 140px; border: 2px dashed rgba(255,182,193,0.4); border-radius: 12px;
-    display: flex; align-items: center; justify-content: center; font-size: 26px;
-    overflow: hidden; background: rgba(255,255,255,0.05); color: #ffb6c1;
-  }
-  .pb-upload-box img { width: 100%; height: 100%; object-fit: cover; }
-  .pb-slot-label { font-size: 11px; color: #cbb; letter-spacing: 0.5px; }
-  .pb-size-control { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 20px; }
-  .pb-size-row { display: flex; align-items: center; gap: 10px; }
-  .pb-size-btn {
-    width: 36px; height: 36px; border-radius: 12px; border: 1px solid rgba(255,182,193,0.35);
-    background: rgba(255,255,255,0.06); color: #fff; font-size: 20px; font-weight: 700;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;
-  }
-  .pb-size-btn:active { transform: scale(0.9); background: rgba(255,107,139,0.25); }
-  .pb-size-input {
-    width: 64px; text-align: center; background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,182,193,0.3); border-radius: 12px; padding: 8px 4px;
-    color: #fff; font-size: 14px; font-family: 'Poppins', sans-serif; outline: none;
-  }
-  .pb-modify-actions { display: flex; flex-direction: column; gap: 10px; }
-  .pb-btn {
-    border: none; border-radius: 20px; padding: 10px 28px; cursor: pointer;
-    letter-spacing: 0.5px; font-size: 13px; width: 100%; font-family: 'Poppins', sans-serif; font-weight: 700;
-    background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,182,193,0.3);
-  }
-  .pb-btn.primary { background: linear-gradient(135deg, #ff758c, #ff7eb3); color: #2a0410; border: none; }
-  .pb-btn.accent { background: rgba(255,215,0,0.12); color: #ffd700; border: 1px solid rgba(255,215,0,0.35); }
-  .pb-btn:active { transform: scale(0.96); }
+        .loader-ring-wrap {
+            position: relative;
+            width: 62px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-  /* Buttons Styling */
-  button {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s, box-shadow 0.3s;
-  }
-  button:active { transform: scale(0.92) !important; }
+        .loader-ring-wrap::before,
+        .loader-ring-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid transparent;
+        }
 
-  #addBtn {
-    background: linear-gradient(135deg, #ff758c, #ff7eb3);
-    color:#fff; border:none; padding:10px 18px; border-radius:25px;
-    font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer;
-    box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);
-  }
-  #addBtn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 117, 140, 0.6); }
+        .loader-ring-wrap::before {
+            border-top-color: var(--primary-pink);
+            border-right-color: var(--primary-pink);
+            animation: loaderSpin 0.9s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+        }
 
-  /* Selection Bar — sticky below header */
-  #selectionBar {
-    display: none; align-items: center; justify-content: space-between;
-    padding: 8px 16px;
-    position: fixed; top: 64px; left: 0; right: 0; z-index: 40;
-    background: rgba(20, 12, 28, 0.92);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 182, 193, 0.12);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  }
+        .loader-ring-wrap::after {
+            inset: 10px;
+            border-bottom-color: var(--accent-gold);
+            border-left-color: var(--accent-gold);
+            opacity: 0.75;
+            animation: loaderSpin 1.3s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite reverse;
+        }
 
-  #selCountWrap {
-    background: rgba(255, 182, 193, 0.15); padding: 6px 14px; border-radius: 12px;
-    border: 1px solid rgba(255, 182, 193, 0.25);
-  }
-  #selCount {
-    color:#ffb6c1; font-size:14px; font-weight: 600;
-  }
+        .loader-mark {
+            font-size: 20px;
+            animation: loaderPulse 1.6s ease-in-out infinite;
+        }
 
-  #cancelBtnWrap {}
-  #cancelSelBtn {
-    background: rgba(255, 182, 193, 0.12);
-    color: #ffb6c1; border: 1px solid rgba(255, 182, 193, 0.3);
-    padding: 8px 14px; border-radius: 25px;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    backdrop-filter: blur(6px);
-  }
+        @keyframes loaderSpin {
+            100% { transform: rotate(360deg); }
+        }
 
-  #delBtnWrap {}
-  #delBtn {
-    background: linear-gradient(135deg, #ff416c, #ff4b2b);
-    color:#fff; border:none; padding:8px 16px; border-radius:25px;
-    font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer;
-    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
-  }
+        @keyframes loaderPulse {
+            0%, 100% { transform: scale(0.85); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
 
-  /* Grid Layout */
-  #gridWrap {
-    position:absolute; top:99px; left:0; right:0; bottom:0;
-    overflow-y:auto;
-    padding: 6px 8px 40px 8px; z-index: 1;
-    transition: padding-top 0.2s ease;
-    contain: layout style;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-  #gridWrap.sel-active {
-    padding-top: 54px;
-  }
-  #grid {
-    display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;
-  }
+        .loader-text {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            animation: loaderTextFade 1.8s ease-in-out infinite;
+        }
 
-  /* Photo Cards */
-  .cell {
-    position:relative; aspect-ratio:1/1; background:#1e1424; overflow:hidden; cursor:pointer;
-    border-radius: 16px; border: 1px solid rgba(255, 182, 193, 0.1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s;
-    animation: popUp 0.3s ease-out;
-    contain: layout style paint;
-    content-visibility: auto;
-    contain-intrinsic-size: 0 120px;
-    transform: translateZ(0);
-  }
-  .cell:hover { transform: scale(1.03) translateZ(0); border-color: rgba(255, 182, 193, 0.4); will-change: transform; }
-  .cell:not(:hover) { will-change: auto; }
-  .cell img {
-    width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;
-    transition: transform 0.3s ease, filter 0.2s ease;
-    decoding: async;
-  }
-  .cell:hover img { transform: scale(1.08); }
+        @keyframes loaderTextFade {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
 
-  /* Heart Checkmark Selection */
-  .checkmark {
-    position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%;
-    background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
-    border: 2px solid #ffb6c1; display:flex; align-items:center; justify-content:center;
-    opacity:0; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events:none;
-  }
-  .checkmark svg { width:14px; height:14px; fill:#fff; display:none; }
-  
-  /* Selected Cell with Bounce Animation */
-  .cell.selected {
-    border: 2.5px solid #ff758c;
-    box-shadow: 0 0 15px rgba(255, 117, 140, 0.6);
-    animation: selectionBounce 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  }
-  .cell.selected .checkmark { opacity:1; background:#ff758c; border-color:#ff758c; transform: scale(1.1); }
-  .cell.selected .checkmark svg { display:block; }
-  .cell.selected img { filter: brightness(0.85); }
+        /* ── Balloon Animation ── */
+        .balloon-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 9990;
+            pointer-events: none;
+            overflow: hidden;
+        }
 
-  @keyframes selectionBounce {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.90); }
-    75% { transform: scale(0.98); }
-    100% { transform: scale(0.95); }
-  }
+        .balloon-layer.fade-out {
+            animation: balloonLayerFadeOut 1.2s ease-in forwards;
+        }
 
-  /* Empty Wrapper */
-  #empty {
-    position:absolute; top:65px; left:0; right:0; bottom:0;
-    display:none; align-items:center; justify-content:center; flex-direction:column;
-    padding: 20px; text-align: center; z-index: 2;
-  }
+        @keyframes balloonLayerFadeOut {
+            0%   { opacity: 1; }
+            100% { opacity: 0; }
+        }
 
-  /* Progress Bar */
-  .progress-card {
-    width: 85%; max-width: 300px;
-    background: rgba(28, 18, 36, 0.9);
-    backdrop-filter: blur(16px);
-    padding: 24px 20px; border-radius: 24px;
-    border: 1px solid rgba(255, 182, 193, 0.2);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 20px rgba(255, 117, 140, 0.2);
-    display: flex; flex-direction: column; align-items: center; gap: 14px;
-    animation: fadeIn 0.3s ease-out;
-  }
-  .progress-header {
-    width: 100%; display: flex; justify-content: space-between; align-items: center;
-    color: #ffb6c1; font-size: 14px; font-weight: 600;
-  }
-  .progress-bar-wrap {
-    width: 100%; height: 12px; background: rgba(255, 255, 255, 0.08);
-    border-radius: 10px; overflow: hidden; position: relative;
-    border: 1px solid rgba(255, 182, 193, 0.15);
-  }
-  .progress-bar-fill {
-    height: 100%; width: 0%;
-    background: linear-gradient(90deg, #ff758c, #ff7eb3, #ffb6c1);
-    border-radius: 10px; transition: width 0.1s linear;
-    box-shadow: 0 0 12px rgba(255, 117, 140, 0.8);
-  }
-  .heart-loader-icon {
-    font-size: 32px; animation: heartBeat 1.2s infinite ease-in-out;
-  }
+        .balloon-wrap {
+            position: absolute;
+            bottom: -200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: balloonRise linear forwards;
+            opacity: 0;
+        }
 
-  /* NO PHOTOS SCREEN */
-  .no-photos-box {
-    display: none; flex-direction: column; align-items: center; gap: 14px;
-    animation: fadeIn 0.4s ease-out;
-  }
-  
-  .empty-heart-wrap {
-    width: 80px; height: 80px;
-    background: rgba(255, 117, 140, 0.12);
-    border: 1px solid rgba(255, 182, 193, 0.25);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    padding: 18px;
-    box-shadow: 0 10px 25px rgba(255, 117, 140, 0.2);
-    animation: customPathMotion 4s infinite cubic-bezier(0.25, 1, 0.5, 1);
-    transform-origin: center;
-    will-change: transform;
-  }
+        @keyframes balloonRise {
+            0%   { transform: translateY(0)   translateX(0); opacity: 0; }
+            5%   { opacity: 0; }
+            12%  { opacity: 1; }
+            88%  { opacity: 1; }
+            100% { transform: translateY(-125vh) translateX(var(--sway)); opacity: 0; }
+        }
 
-  @keyframes customPathMotion {
-    0% { transform: translate(-140px, -260px) rotate(0deg) scale(0.6); opacity: 0; }
-    15% { opacity: 1; }
-    30% { transform: translate(-25px, 0px) rotate(180deg) scale(1.1); }
-    45% { transform: translate(20px, -70px) rotate(300deg) scale(0.95); }
-    60% { transform: translate(60px, -10px) rotate(420deg) scale(1.05); }
-    80% { transform: translate(140px, -240px) rotate(580deg) scale(0.8); opacity: 1; }
-    100% { transform: translate(180px, -320px) rotate(720deg) scale(0.4); opacity: 0; }
-  }
+        .balloon-heart {
+            font-size: 54px;
+            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.4));
+            animation: balloonSway ease-in-out infinite alternate;
+        }
 
-  .empty-title { color: #fff; font-size: 20px; font-weight: 700; }
-  .empty-subtitle { color: #dda0dd; font-size: 13px; max-width: 240px; line-height: 1.5; }
-  .empty-action-btn {
-    margin-top: 8px; background: linear-gradient(135deg, #ff758c, #ff7eb3);
-    color: #fff; border: none; padding: 12px 24px; border-radius: 25px;
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    box-shadow: 0 5px 20px rgba(255, 117, 140, 0.4);
-    animation: pulseButton 2s infinite ease-in-out;
-  }
+        @keyframes balloonSway {
+            0%   { transform: rotate(-6deg) scale(1); }
+            100% { transform: rotate(6deg)  scale(1.04); }
+        }
 
-  @keyframes pulseButton {
-    0%, 100% { transform: scale(1); box-shadow: 0 5px 20px rgba(255, 117, 140, 0.4); }
-    50% { transform: scale(1.04); box-shadow: 0 8px 25px rgba(255, 117, 140, 0.7); }
-  }
+        .balloon-string {
+            width: 2px;
+            height: 130px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.15));
+            border-radius: 2px;
+            margin-top: -4px;
+        }
 
-  /* Shimmer Placeholder */
-  .cell.uploading {
-    background: linear-gradient(90deg, #1e1424 25%, #2a1b33 50%, #1e1424 75%);
-    background-size: 200% 100%; animation: shimmer 1.2s infinite linear;
-  }
+        /* Ambient background particles */
+        .ambient-particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,220,240,0.85) 0%, rgba(255,160,200,0.12) 70%, transparent 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
 
-  /* Modals */
-  #confirmOverlay {
-    position:fixed; inset:0; background:rgba(15, 10, 18, 0.85);
-    backdrop-filter: blur(8px); display:none; align-items:center; justify-content:center; z-index:100;
-    animation: fadeIn 0.2s ease-out;
-  }
-  #confirmBox {
-    background:#1c1221; border: 1px solid rgba(255, 182, 193, 0.2);
-    border-radius:20px; padding:24px; width:82%; max-width:310px; text-align:center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  #confirmBox p { color:#fff; font-size:15px; margin-bottom:18px; font-weight: 500; }
-  #confirmBox .row { display:flex; gap:12px; }
-  #confirmBox button {
-    flex:1; padding:11px; border:none; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer;
-  }
-  #cancelDel { background:#2d1d36; color:#ffb6c1; }
-  #okDel { background:linear-gradient(135deg, #ff416c, #ff4b2b); color:#fff; box-shadow: 0 4px 12px rgba(255, 65, 108, 0.4); }
+        @keyframes floatUp {
+            0% { transform: translateY(105vh) scale(0.2); opacity: 0; }
+            15% { opacity: 0.55; }
+            85% { opacity: 0.55; }
+            100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
+        }
 
-  /* Lightbox */
-  #lightboxOverlay {
-    position:fixed; inset:0; background:rgba(10, 5, 12, 0.95);
-    backdrop-filter: blur(15px); display:none; flex-direction:column;
-    align-items:center; justify-content:center; z-index:100; overflow:hidden;
-    animation: fadeIn 0.25s ease-out;
-  }
-  #lightboxHeader {
-    position:absolute; top:-10px; left:0; right:0; height:64px; margin:0;
-    display:flex; align-items:center; justify-content:space-between; padding:0 16px; z-index:101;
-  }
-  #lbClose, #lbDownload {
-    background:rgba(255, 182, 193, 0.15); color:#ffb6c1; border: 1px solid rgba(255, 182, 193, 0.3);
-    padding:8px 16px; margin:0; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer;
-    display:flex; align-items:center; gap:6px; backdrop-filter: blur(8px);
-  }
+        /* Fireflies */
+        .firefly {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #ffafcc, 0 0 24px #ff8fa3, 0 0 36px #ffd700;
+            pointer-events: none;
+            animation: fireflyFloat 7s ease-in-out infinite alternate;
+        }
 
-    #lbCounter {
-    position:absolute; top:6px; left:50%; transform:translateX(-50%);
-    color:#ffb6c1; font-size:12px; font-weight:600; letter-spacing:0.5px;
-    background: rgba(255, 182, 193, 0.12); border: 1px solid rgba(255, 182, 193, 0.25);
-    padding:5px 14px; border-radius:20px; backdrop-filter: blur(8px); z-index:101;
-  }
+        @keyframes fireflyFloat {
+            0% { transform: translate(0, 0); opacity: 0.1; }
+            50% { opacity: 0.95; }
+            100% { transform: translate(var(--dx), var(--dy)); opacity: 0.1; }
+        }
 
-  
-  #imgContainer {
-    width:100%; height:100%; 
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; touch-action:none; position:relative;
-  }
-  .lb-slide-img {
-    position:absolute; top:calc(50% - 45px); left:50%;
-    max-width:94%; max-height:75vh; border-radius:16px; object-fit:contain;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 30px rgba(255, 117, 140, 0.2);
-    transform-origin: center center;
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-  #lbImgPrev, #lbImgNext {
-    pointer-events:none; visibility:hidden;
-  }
-  #lightboxImg { display:none; }
-  #lbLoading { position:absolute; width:100%; display:flex; justify-content:center; }
+        /* Header Bar Top Fixed */
+        .top-header-bar {
+            position: fixed;
+            top: max(10px, env(safe-area-inset-top));
+            left: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 90;
+        }
 
+        .header-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 8px 18px;
+            border-radius: 20px;
+            text-align: left;
+            color: var(--text-main);
+            font-family: 'Cinzel', serif;
+            font-size: clamp(10px, 3.2vw, 13px);
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            line-height: 1.3;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+            max-width: calc(100% - 60px);
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
 
-  .lb-nav-btn {
-    position:absolute; top:50%; transform:translateY(-50%); z-index:101;
-    width:70px; height:600px; border-radius:0%; border:none; cursor:pointer;
-    background: transparent; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(8px);
-    border: 1px transparent; 
-    display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 4px 15px transparent; 
-    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
-  }
-  .lb-nav-btn:active { transform: translateY(-50%) scale(0.88); background:transparent;}
-  .lb-nav-btn svg { width:20px; height:20px; }
-  #lbPrev { left:12px; }
-  #lbNext { right:12px; }
+        .header-card .main-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
 
-  @media (min-width: 640px) {
-    #lbPrev { left:24px; }
-    #lbNext { right:24px; }
-    .lb-nav-btn { width:50px; height:50px; }
-  }
+        .header-card .sub-line {
+            display: block;
+            margin-top: 2px;
+            font-size: 0.76em;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
 
-  /* Keyframe Animations */
-  @keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
-  @keyframes pulseTitle { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; text-shadow: 0 0 18px rgba(255, 182, 193, 0.8); } }
-  @keyframes popUp { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  @keyframes zoomIn { from { transform: scale(0.85); opacity:0; } to { transform: scale(1); opacity:1; } }
-  @keyframes scaleUp { from { transform: scale(0.8); } to { transform: scale(1); } }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        @keyframes slideDown {
+            0% { transform: translateY(-30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
 
-  #fileInput { display:none; }
+        .header-card span.heart {
+            color: var(--primary-pink);
+            font-size: 1.1em;
+            animation: pulseHeart 1.6s ease-in-out infinite;
+            display: inline-block;
+        }
 
-  /* Thumbnail Carousel Strip */
-  #lbThumbnailStrip {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 90px;
-    background: linear-gradient(to top, rgba(10, 5, 12, 0.97) 60%, rgba(10, 5, 12, 0.0));
-    display: flex; align-items: center; justify-content: flex-start;
-    z-index: 102;
-    padding: 0 0 10px 0;
-    pointer-events: auto;
-    overflow: hidden;
-  }
+        @keyframes pulseHeart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
 
-  #lbThumbTrack {
-    display: flex; align-items: center; justify-content: flex-start;
-    gap: 6px;
-    transition: none;
-    will-change: transform;
-    transform: translateX(0);
-    padding-left: 6px;
-  }
+        /* Menu Trigger Button in Header Right */
+        .menu-trigger-btn {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
 
+        .menu-trigger-btn:active {
+            transform: scale(0.92);
+        }
 
-  .lb-thumb {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 2px solid transparent;
+        /* Header Right Top Menu Overlay - Screenshot Style */
+        .top-menu-dropdown {
+            position: fixed;
+            top: max(10px, env(safe-area-inset-top));
+            right: 12px;
+            width: 250px;
+            background: rgba(15, 6, 24, 0.94);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 182, 193, 0.28);
+            border-radius: 22px;
+            padding: 16px 14px 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-  transition:
-    transform 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-    border-color 0.25s ease,
-    opacity 0.25s ease,
-    width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-    height 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+        .top-menu-dropdown.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
 
-  /* ALL THUMBNAILS FULL CLEAR */
-  opacity: 1;
+        .menu-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  position: relative;
-}
+        .menu-title {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            letter-spacing: 1.5px;
+            color: var(--primary-pink);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
 
-.lb-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  pointer-events: none;
+        .menu-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 6px;
+            line-height: 1;
+        }
 
-  /* IMAGE FULL CLEAR */
-  opacity: 1;
-  filter: none;
-}
+        .menu-item-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+            width: 100%;
+            transition: all 0.25s ease;
+        }
 
-.lb-thumb.active {
-  width: 68px;
-  height: 68px;
+        .menu-item-btn:hover, .menu-item-btn:active {
+            background: rgba(255, 107, 139, 0.2);
+            border-color: rgba(255, 107, 139, 0.5);
+            color: #fff;
+            transform: translateX(-2px);
+        }
 
-  /* ACTIVE PHOTO BORDER */
-  border-color: #ff758c;
+        .menu-item-btn.accent {
+            background: linear-gradient(135deg, rgba(255,107,139,0.2), rgba(255,215,0,0.1));
+            border-color: rgba(255, 182, 193, 0.35);
+        }
 
-  /* ACTIVE ALSO FULL CLEAR */
-  opacity: 1;
+        .menu-item-btn.gold {
+            background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,107,139,0.1));
+            border-color: rgba(255, 215, 0, 0.35);
+        }
 
-  box-shadow:
-    0 0 16px rgba(255, 117, 140, 0.7),
-    0 4px 12px rgba(0,0,0,0.6);
+        /* Inline Size Control Block inside Menu */
+        .menu-size-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 4px 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 2px 0;
+        }
 
-  transform: scale(1);
-}
+        .menu-block-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
 
-/* NON-ACTIVE THUMBNAILS ALSO STAY CLEAR */
-.lb-thumb:not(.active) {
-  opacity: 1;
-  filter: none;
-}
+        /* Background Darkness Slider */
+        .darkness-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
 
-/* HOVER */
-.lb-thumb:not(.active):hover {
-  opacity: 1;
-  transform: scale(1.06);
-}
+        .darkness-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.5), rgba(0,0,0,0.9));
+            outline: none;
+        }
 
-  @media (max-width: 400px) {
-    #lbThumbnailStrip { height: 80px; }
-    .lb-thumb { width: 48px; height: 48px; }
-    .lb-thumb.active { width: 60px; height: 60px; }
-  }
-</style>
+        .darkness-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-pink);
+            border: 2px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        .darkness-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-pink);
+            border: 2px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        .darkness-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* Background Color Picker */
+        .bg-color-picker {
+            position: relative;
+            width: 100%;
+        }
+
+        .bg-color-btn {
+            justify-content: flex-start;
+        }
+
+        .color-swatch {
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+        }
+
+        .bg-color-dropdown {
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 12px 10px;
+            margin-top: 8px;
+            background: rgba(10, 5, 15, 0.92);
+            border: 1px solid rgba(255, 182, 193, 0.28);
+            border-radius: 16px;
+        }
+
+        .bg-color-dropdown.open {
+            display: grid;
+        }
+
+        .color-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .color-option:active {
+            transform: scale(0.9);
+        }
+
+        .color-option.active {
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* Botanical Element Styling */
+        .flower {
+            position: absolute;
+            font-size: var(--flower-size, clamp(18px, 5.4vw, 28px));
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 2;
+            cursor: pointer;
+            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-25deg); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .flower:hover {
+            transform: translate(-50%, -50%) scale(1.25);
+        }
+
+        .flower:active {
+            transform: translate(-50%, -50%) scale(1.4);
+        }
+
+        /* Advanced Liquid Nectar Splashes */
+        .juice-splash {
+            position: absolute;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .liquid-drop {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.98), rgba(255, 215, 0, 0.92) 45%, rgba(255, 110, 40, 0.98) 100%);
+            border-radius: 50%;
+            box-shadow: inset -2px -2px 6px rgba(160, 50, 0, 0.7), 0 4px 10px rgba(255, 180, 0, 0.5);
+            animation: realisticSplash 0.9s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+        }
+
+        @keyframes realisticSplash {
+            0% { transform: translate(0, 0) scale(0.2); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.15); opacity: 0; }
+        }
+
+        /* Dreamy sleep bubble */
+        .dream-bubble {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            z-index: 11;
+            opacity: 0;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            animation: dreamFloat 1.6s ease-out forwards;
+        }
+
+        @keyframes dreamFloat {
+            0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+            25% { opacity: 0.95; }
+            100% { transform: translate(-50%, -160%) scale(1.2); opacity: 0; }
+        }
+
+        /* Confetti burst */
+        .confetti-piece {
+            position: fixed;
+            top: -40px;
+            z-index: 60;
+            pointer-events: none;
+            animation: confettiFall linear forwards;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(112vh) rotate(360deg); opacity: 0.85; }
+        }
+
+        /* Realistic Butterfly Animation Engine */
+        .butterfly-container {
+            position: absolute;
+            width: calc(var(--wing-size) * 1.3334);
+            height: calc(var(--wing-size) * 1.3334);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            left: 50%;
+            top: 50%;
+            transition: left 1.8s cubic-bezier(0.35, 0, 0.25, 1), top 1.8s cubic-bezier(0.35, 0, 0.25, 1), transform 0.4s ease-out;
+            z-index: 50;
+            transform-origin: center center;
+            pointer-events: none;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.7));
+        }
+
+        .butterfly-body {
+            position: absolute;
+            font-size: 38px;
+            z-index: 3;
+            transform: rotate(90deg);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+        }
+
+        .wing-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wing {
+            position: absolute;
+            font-size: var(--wing-size);
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .wing.left {
+            left: 0;
+            justify-content: flex-start;
+            transform-origin: right center;
+            animation: flapLeft 0.1s ease-in-out infinite alternate;
+        }
+
+        .wing.right {
+            right: 0;
+            justify-content: flex-end;
+            transform-origin: left center;
+            animation: flapRight 0.1s ease-in-out infinite alternate;
+        }
+
+        .butterfly-container.drinking .wing.left {
+            animation-duration: 0.38s; 
+        }
+        .butterfly-container.drinking .wing.right {
+            animation-duration: 0.38s; 
+        }
+
+        /* Sleepy bubble */
+        .rest-bubble {
+            position: absolute;
+            left: 50%;
+            top: -18px;
+            transform: translateX(-50%);
+            font-size: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .butterfly-container.drinking .rest-bubble {
+            opacity: 1;
+            animation: restBob 1.4s ease-in-out infinite;
+        }
+
+        @keyframes restBob {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-6px); }
+        }
+
+        @keyframes flapLeft {
+            0% { transform: scaleX(1) rotateY(0deg); }
+            100% { transform: scaleX(0.15) rotateY(75deg); }
+        }
+
+        @keyframes flapRight {
+            0% { transform: scaleX(1) rotateY(0deg); }
+            100% { transform: scaleX(0.15) rotateY(-75deg); }
+        }
+
+        /* Interactive Click Ripple */
+        .click-ripple {
+            position: absolute;
+            border: 2px solid rgba(255, 107, 139, 0.65);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0.2);
+            pointer-events: none;
+            animation: rippleEffect 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            z-index: 5;
+        }
+
+        @keyframes rippleEffect {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+        }
+
+        /* Toast Modal */
+        .info-modal {
+            position: fixed;
+            top: max(68px, calc(env(safe-area-inset-top) + 60px));
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border-hover);
+            padding: 8px 18px;
+            border-radius: 18px;
+            color: #ffd1dc;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 90vw;
+            white-space: nowrap;
+        }
+
+        .info-modal.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Love note overlay */
+        .love-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+            padding: 24px;
+        }
+
+        .love-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .love-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border-hover);
+            border-radius: 26px;
+            padding: 34px 26px 26px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.65);
+            transform: translateY(14px) scale(0.96);
+            transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .love-overlay.show .love-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .love-card .love-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+            display: block;
+            animation: pulseHeart 1.6s ease-in-out infinite;
+        }
+
+        .love-card h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--primary-pink);
+            margin: 0 0 14px;
+            font-size: 19px;
+            letter-spacing: 1px;
+        }
+
+        .love-card p {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text-main);
+            margin: 0 0 22px;
+        }
+
+        .love-card button {
+            background: linear-gradient(135deg, var(--primary-pink), #ffb3c6);
+            border: none;
+            color: #2a0410;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding: 10px 30px;
+            border-radius: 22px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+            transition: transform 0.2s ease;
+        }
+
+        .love-card button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Password / Auth Modal Overlay */
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            padding: 24px;
+        }
+
+        .auth-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .auth-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border-hover);
+            border-radius: 26px;
+            padding: 30px 24px 24px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.8);
+            transform: translateY(14px) scale(0.96);
+            transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .auth-overlay.show .auth-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .auth-card .auth-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .auth-card h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--primary-pink);
+            margin: 0 0 16px;
+            font-size: 13px;
+        }
+
+        .auth-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s ease;
+            margin-bottom: 14px;
+        }
+
+        .auth-input:focus {
+            border-color: var(--primary-pink);
+        }
+
+        .auth-checkbox-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .auth-checkbox-row input {
+            accent-color: var(--primary-pink);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, var(--primary-pink), #ffb3c6);
+            border: none;
+            color: #2a0410;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding: 10px 28px;
+            border-radius: 20px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+            width: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .auth-btn:active {
+            transform: scale(0.96);
+        }
+
+        .auth-error {
+            color: #ff8fa3;
+            font-size: 12px;
+            margin-top: 10px;
+            min-height: 16px;
+        }
+
+        /* Wing Photo (replaces emoji, same visual size).
+           Height-only scaling (no forced square + object-fit:contain) avoids the
+           transparent letterbox padding that was leaving a faint gap at the
+           center seam when a split full-image was used. */
+        .wing-photo {
+            height: var(--wing-size);
+            width: auto;
+            max-width: none;
+            display: block;
+            object-fit: contain;
+            pointer-events: none;
+            -webkit-user-drag: none;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        /* When a split full-image is applied, anchor each half to the center line
+           (instead of the outer edge used for the plain emoji) so the two halves
+           join seamlessly with no visible gap. */
+        .wing.left.has-photo {
+            justify-content: flex-end;
+        }
+
+        .wing.right.has-photo {
+            justify-content: flex-start;
+        }
+
+        .wing.left.has-photo .wing-photo {
+            margin-right: 0px;
+        }
+
+        .wing.right.has-photo .wing-photo {
+            margin-left: 0px;
+        }
+
+        /* Butterfly Size Control */
+        .wing-size-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .size-control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .size-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 182, 193, 0.35);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+
+        .size-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 107, 139, 0.25);
+        }
+
+        .size-input {
+            width: 64px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            border-radius: 12px;
+            padding: 8px 4px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            outline: none;
+        }
+
+        .size-input:focus {
+            border-color: var(--primary-pink);
+        }
+
+        /* Upload Wing Overlay */
+        .wing-upload-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 1, 8, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 210;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            padding: 24px;
+        }
+
+        .wing-upload-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .wing-upload-card {
+            transform: translateY(14px) scale(0.96);
+        }
+
+        .wing-upload-overlay.show .wing-upload-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .wing-upload-slots {
+            display: flex;
+            gap: 1px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .wing-upload-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-box {
+            width: 94px;
+            height: 150px;
+            border: 2px dashed rgba(255, 182, 193, 0.4);
+            border-radius: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            transition: border-color 0.25s ease;
+        }
+
+        .upload-box:active {
+            border-color: var(--primary-pink);
+        }
+
+        .upload-box .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+
+        .slot-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .wing-upload-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .full-butterfly-upload-section {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .full-upload-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px dashed rgba(255, 215, 0, 0.5);
+            border-radius: 14px;
+            background: rgba(255, 215, 0, 0.08);
+            color: var(--accent-gold);
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.25s ease, background 0.25s ease;
+        }
+
+        .full-upload-box:active {
+            border-color: var(--accent-gold);
+            background: rgba(255, 215, 0, 0.15);
+        }
+
+        .full-upload-box .full-upload-thumb {
+            width: 34px;
+            height: 34px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        /* Letter Category Tabs Bar */
+        #letterTabsBar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 18;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px 10px;
+            overflow-x: auto;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            min-height: 58px;
+        }
+        #letterTabsBar::-webkit-scrollbar { display: none; }
+
+        .letter-tab {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: rgba(255,255,255,0.1);
+            border: 1.5px solid rgba(255,182,193,0.25);
+            border-radius: 12px;
+            padding: 5px 10px 4px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
+            min-width: 44px;
+            pointer-events: auto;
+        }
+        .letter-tab.active {
+            background: rgba(255,107,139,0.3);
+            border-color: var(--primary-pink);
+            transform: translateY(-2px);
+        }
+        .letter-tab .tab-letter {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1;
+        }
+        .letter-tab.active .tab-letter { color: var(--primary-pink); }
+        .letter-tab .tab-word-label {
+            font-size: 8px;
+            color: var(--text-muted);
+            line-height: 1;
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Word Layout Overlay list rows */
+        .wl-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 8px 12px;
+            width: 100%;
+        }
+        .wl-word-text {
+            flex: 1;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .wl-edit-input {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--primary-pink);
+            color: var(--text-main);
+            padding: 5px 8px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            outline: none;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .wl-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,182,193,0.3);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            white-space: nowrap;
+        }
+        .wl-btn.del { border-color: rgba(255,80,80,0.4); color: #ff8080; }
+        .wl-btn.save { border-color: rgba(100,255,150,0.4); color: #80ffaa; }
+    </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
-  <defs>
-    <linearGradient id="gradPink" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ff9ec7"/>
-      <stop offset="55%" stop-color="#ff6f9c"/>
-      <stop offset="100%" stop-color="#e0447a"/>
-    </linearGradient>
-    <linearGradient id="gradPinkLower" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffc4dc"/>
-      <stop offset="100%" stop-color="#ff8fb8"/>
-    </linearGradient>
-    <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#e6b8e6"/>
-      <stop offset="55%" stop-color="#c583d6"/>
-      <stop offset="100%" stop-color="#9a4fc2"/>
-    </linearGradient>
-    <linearGradient id="gradPurpleLower" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f0d4f5"/>
-      <stop offset="100%" stop-color="#d9a8ec"/>
-    </linearGradient>
-    <linearGradient id="gradBlush" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffd1da"/>
-      <stop offset="55%" stop-color="#ff9fb3"/>
-      <stop offset="100%" stop-color="#f4577f"/>
-    </linearGradient>
-    <linearGradient id="gradBlushLower" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffe6ea"/>
-      <stop offset="55%" stop-color="#ffb3c4"/>
-      <stop offset="100%" stop-color="#f07d99"/>
-    </linearGradient>
-    <radialGradient id="glossHi" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#2c1420"/>
-      <stop offset="45%" stop-color="#5a2e42"/>
-      <stop offset="100%" stop-color="#1f0f18"/>
-    </linearGradient>
-    <filter id="wingShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="1.2" stdDeviation="1.4" flood-color="#3a0f22" flood-opacity="0.35"/>
-    </filter>
-    <filter id="wingGlow" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="2.2" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-</svg>
 
-<div id="header">
-  <div class="title-area">
-    <div class="title">Zaina Parveen</div>
-  </div>
-  <button id="pbSettingsBtn" title="Butterfly Settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#ffd7e6" stroke-width="1.8" width="19" height="19">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-  </button>
-  <div id="rightControls">
-    <button id="addBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="10" height="15"><path d="M12 5v14M5 12h14"/></svg>
-      Add Photo
-    </button>
-  </div>
-</div>
-
-<!-- Home-screen layer where uploaded photo-butterflies fly -->
-<div id="pbFlyingLayer"></div>
-
-<div id="pbSpeedBar">
-  <span class="pb-speed-icon">🐢</span>
-  <input type="range" id="pbSpeedSlider" min="1" max="20" step="1" value="10">
-  <span class="pb-speed-icon">🐇</span>
-</div>
-
-<!-- Butterfly List Overlay -->
-<div id="pbListOverlay" class="pb-list-overlay">
-  <div class="pb-list-header">
-    <span class="pb-list-title">BUTTERFLY LIST</span>
-    <button id="pbListClose" class="pb-list-close">✕</button>
-  </div>
-  <div class="pb-list-addrow">
-    <button id="pbAddBtn" class="pb-list-addbtn">+ ADD BUTTERFLY</button>
-  </div>
-  <div id="pbList" class="pb-list-body"></div>
-</div>
-
-<!-- Modify Butterfly Overlay -->
-<div id="pbModifyOverlay" class="pb-modify-overlay">
-  <div class="pb-modify-card">
-    <span class="pb-modify-icon">🦋</span>
-    <h3 class="pb-modify-heading">Modify Butterfly</h3>
-    <div class="pb-full-upload-section">
-      <label class="pb-full-upload-box" id="pbFullBox">
-        <span id="pbFullContent">🖼️ Upload Full Butterfly Image</span>
-        <input type="file" accept="image/*" id="pbFullInput" style="display:none;">
-      </label>
-    </div>
-    <h4 class="pb-wing-heading">Upload Wing Photos</h4>
-    <div class="pb-wing-slots">
-      <div class="pb-wing-slot">
-        <div class="pb-upload-box" id="pbLeftPreview">➕</div>
-        <span class="pb-slot-label">Left Wing</span>
-      </div>
-      <div class="pb-wing-slot">
-        <div class="pb-upload-box" id="pbRightPreview">➕</div>
-        <span class="pb-slot-label">Right Wing</span>
-      </div>
-    </div>
-    <div class="pb-size-control">
-      <span class="pb-slot-label">Butterfly Size</span>
-      <div class="pb-size-row">
-        <button class="pb-size-btn" id="pbSizeDec" type="button">−</button>
-        <input type="number" id="pbSizeInput" class="pb-size-input" min="20" max="90" step="2" value="42">
-        <button class="pb-size-btn" id="pbSizeInc" type="button">+</button>
-      </div>
-    </div>
-    <div class="pb-modify-actions">
-      <button class="pb-btn primary" id="pbApplyBtn">Apply Wings</button>
-      <button class="pb-btn accent" id="pbResetBtn">↺ Reset to Default</button>
-      <button class="pb-btn" id="pbModifyClose">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Selection Bar: Sticky below header — outside gridWrap -->
-<div id="selectionBar">
-  <div id="selCountWrap">
-    <span id="selCount">0 Selected</span>
-  </div>
-  <div id="cancelBtnWrap">
-    <button id="cancelSelBtn">✕ Cancel</button>
-  </div>
-  <div id="delBtnWrap">
-    <button id="delBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="10" height="15"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z"/></svg>
-      Delete
-    </button>
-  </div>
-</div>
-
-<input type="file" id="fileInput" accept="image/*" multiple>
-
-<div id="gridWrap">
-  <div id="grid"></div>
-  
-  <div id="empty">
-    <!-- Heart Progress Bar -->
-    <div class="progress-card" id="initSpinner">
-      <div class="heart-loader-icon">💖</div>
-      <div class="progress-header">
-        <span>Loading Gallery...</span>
-        <span id="progressText">0%</span>
-      </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="progressBarFill"></div>
-      </div>
+    <!-- Professional Loading Screen -->
+    <div class="app-loader" id="appLoader">
+        <div class="loader-ring-wrap"><span class="loader-mark">🦋</span></div>
+        <span class="loader-text">Loading Garden</span>
     </div>
 
-    <!-- Animated No Photos Screen -->
-    <div class="no-photos-box" id="emptyText">
-      <div class="empty-heart-wrap">
-        <svg class="butterfly-svg" viewBox="0 0 100 100">
-          <g class="wing wing-left">
-            <path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/>
-            <path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/>
-          </g>
-          <g class="wing wing-right">
-            <path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/>
-            <path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/>
-          </g>
-          <ellipse cx="50" cy="52" rx="2.6" ry="16" fill="#4a2c3a"/>
-          <path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#4a2c3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="empty-title">No Photos Yet</div>
-      <div class="empty-subtitle">Zaina's gallery is empty right now. Tap below to upload lovely photos!</div>
-      <button class="empty-action-btn" onclick="fileInput.click()">✨ Upload First Photo</button>
-    </div>
-  </div>
-</div>
+    <div class="vignette-overlay"></div>
+    <div class="bg-darkness-overlay" id="bgDarknessOverlay"></div>
 
-<!-- Delete Confirmation Modal -->
-<div id="confirmOverlay">
-  <div id="confirmBox">
-    <p id="confirmText">Delete selected photos?</p>
-    <div class="row">
-      <button id="cancelDel">Cancel</button>
-      <button id="okDel">Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- Lightbox Modal -->
-<div id="lightboxOverlay">
-  <div id="lightboxHeader">
-    <button id="lbClose">✕ Close</button>
-    <button id="lbDownload">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      Save Photo
-    </button>
-  </div>
-  <div id="lbCounter">1 / 1</div>
-  <div id="imgContainer">
-    <div id="lbLoading">
-      <div class="progress-card">
-        <div class="heart-loader-icon">💖</div>
-        <div class="progress-header">
-          <span>Opening Photo...</span>
-          <span id="lbProgressText">0%</span>
+    <!-- Header Section -->
+    <div class="top-header-bar">
+        <div class="header-card">
+            <div class="main-line"><span class="heart">❤</span> Dedicated to Rahima <span class="heart">❤</span></div>
+            <span class="sub-line">Zaina's Mommy · My Beloved Wife</span>
         </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" id="lbProgressBarFill"></div>
-        </div>
-      </div>
+        <button class="menu-trigger-btn" id="menuToggleBtn">☰</button>
     </div>
-    <img id="lbImgPrev" class="lb-slide-img" src="" alt="">
-    <img id="lightboxImg" class="lb-slide-img" src="" alt="Preview">
-    <img id="lbImgNext" class="lb-slide-img" src="" alt="">
-    <button id="lbPrev" class="lb-nav-btn" aria-label="Previous">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-    <button id="lbNext" class="lb-nav-btn" aria-label="Next">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-    </button>
-  </div>
-  <!-- Thumbnail Carousel Strip -->
-  <div id="lbThumbnailStrip">
-    <div id="lbThumbTrack"></div>
-  </div>
-</div>
 
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyA0rirztMO13FyXcKYz1aEB1ERYH-HQUbA",
-  authDomain: "sweethouse-e3e49.firebaseapp.com",
-  databaseURL: "https://sweethouse-e3e49-default-rtdb.firebaseio.com",
-  projectId: "sweethouse-e3e49",
-  storageBucket: "sweethouse-e3e49.firebasestorage.app",
-  messagingSenderId: "579322038108",
-  appId: "1:579322038108:web:166b7fdb103080f56d6399"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const photosRef = db.ref('zaina_photos2');
-
-const grid = document.getElementById('grid');
-const gridWrap = document.getElementById('gridWrap');
-const emptyEl = document.getElementById('empty');
-const initSpinner = document.getElementById('initSpinner');
-const emptyText = document.getElementById('emptyText');
-const fileInput = document.getElementById('fileInput');
-const addBtn = document.getElementById('addBtn');
-const selectionBar = document.getElementById('selectionBar');
-const delBtn = document.getElementById('delBtn');
-const selCount = document.getElementById('selCount');
-const confirmOverlay = document.getElementById('confirmOverlay');
-const confirmText = document.getElementById('confirmText');
-const cancelDel = document.getElementById('cancelDel');
-const okDel = document.getElementById('okDel');
-const cancelSelBtn = document.getElementById('cancelSelBtn');
-const lightboxOverlay = document.getElementById('lightboxOverlay');
-const lightboxImg = document.getElementById('lightboxImg');
-const lbImgPrev = document.getElementById('lbImgPrev');
-const lbImgNext = document.getElementById('lbImgNext');
-let containerWidth = 0;
-const lbLoading = document.getElementById('lbLoading');
-const imgContainer = document.getElementById('imgContainer');
-const lbClose = document.getElementById('lbClose');
-const lbDownload = document.getElementById('lbDownload');
-const lbPrev = document.getElementById('lbPrev');
-const lbNext = document.getElementById('lbNext');
-const lbCounter = document.getElementById('lbCounter');
-const lbThumbTrack = document.getElementById('lbThumbTrack');
-
-const progressText = document.getElementById('progressText');
-const progressBarFill = document.getElementById('progressBarFill');
-const lbProgressText = document.getElementById('lbProgressText');
-const lbProgressBarFill = document.getElementById('lbProgressBarFill');
-
-let photos = {};
-let selected = new Set();
-let isDragSelecting = false;
-let dragInitialState = true;
-let longPressTimer = null;
-let startY = 0;
-let currentLightboxUrl = '';
-
-/* IndexedDB Cache — 500MB+, localStorage se 100x bada */
-const IDB_NAME = 'ZainaGallery';
-const IDB_STORE = 'photos';
-const IDB_VERSION = 1;
-let idb = null;
-
-function openIDB() {
-  return new Promise((resolve, reject) => {
-    if (idb) { resolve(idb); return; }
-    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        db.createObjectStore(IDB_STORE, { keyPath: 'id' });
-      }
-    };
-    req.onsuccess = (e) => { idb = e.target.result; resolve(idb); };
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function loadCachedPhotos() {
-  try {
-    const db = await openIDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(IDB_STORE, 'readonly');
-      const store = tx.objectStore(IDB_STORE);
-      const req = store.getAll();
-      req.onsuccess = () => {
-        const rows = req.result;
-        if (rows && rows.length > 0) {
-          photos = {};
-          rows.forEach(r => { photos[r.id] = { url: r.url, order: r.order }; });
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      };
-      req.onerror = () => resolve(false);
-    });
-  } catch(e) { return false; }
-}
-
-async function saveCachedPhotos(data) {
-  try {
-    const db = await openIDB();
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    const store = tx.objectStore(IDB_STORE);
-    // Clear old, write new
-    store.clear();
-    Object.entries(data).forEach(([id, p]) => {
-      store.put({ id, url: p.url, order: p.order });
-    });
-  } catch(e) { console.warn('IDB save error', e); }
-}
-
-async function removeFromCache(id) {
-  try {
-    const db = await openIDB();
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).delete(id);
-  } catch(e) {}
-}
-
-async function addToCache(id, p) {
-  try {
-    const db = await openIDB();
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).put({ id, url: p.url, order: p.order });
-  } catch(e) {}
-}
-
-function animateProgress(fillEl, textEl, callback) {
-  let val = 0;
-  fillEl.style.width = '0%';
-  textEl.textContent = '0%';
+    <!-- Right Side Option Menu Dropdown (Screenshot Style) -->
+    <div class="top-menu-dropdown" id="topMenuDropdown">
+        <div class="menu-header-row">
+            <span class="menu-title">Garden Menu</span>
+            <button class="menu-close-btn" id="closeMenuBtn">✕</button>
+        </div>
   
-  const interval = setInterval(() => {
-    val += Math.floor(Math.random() * 20) + 10;
-    if (val >= 100) {
-      val = 100;
-      fillEl.style.width = '100%';
-      textEl.textContent = '100%';
-      clearInterval(interval);
-      setTimeout(() => { if (callback) callback(); }, 100);
-    } else {
-      fillEl.style.width = val + '%';
-      textEl.textContent = val + '%';
-    }
-  }, 35);
-}
+        <button class="menu-item-btn gold" id="wordLayoutBtn">📝 Word Layout</button>
+        <button class="menu-item-btn gold" id="uploadWingMenuBtn">📸 Upload Butterfly</button>
 
-function getFormattedDateTime(timestamp) {
-  const date = new Date(timestamp);
-  return date.toLocaleString('en-US', { 
-    day: '2-digit', month: 'short', year: 'numeric', 
-    hour: '2-digit', minute: '2-digit', hour12: true 
-  });
-}
+        <div class="bg-color-picker">
+            <button class="menu-item-btn bg-color-btn" id="bgColorBtn" type="button">
+                <span class="color-swatch" id="colorSwatchIndicator"></span> Background Color
+            </button>
+            <div class="bg-color-dropdown" id="bgColorDropdownList"></div>
+        </div>
 
-function updateHeaderState() {
-  const n = selected.size;
-  if (n > 0) {
-    selectionBar.style.display = 'flex';
-    selCount.textContent = n + ' Selected';
-    gridWrap.classList.add('sel-active');
-  } else {
-    selectionBar.style.display = 'none';
-    gridWrap.classList.remove('sel-active');
-  }
-}
+        <div class="menu-size-block">
+            <span class="menu-block-label">🌑 Background Darkness</span>
+            <div class="darkness-slider-row">
+                <input type="range" id="darknessSlider" class="darkness-slider" min="0" max="90" step="5" value="0">
+                <span class="darkness-value" id="darknessValueLabel">0%</span>
+            </div>
+        </div>
 
-/* IntersectionObserver: load image only when near viewport */
-const imgObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const img = entry.target;
-      const src = img.dataset.src;
-      if (src) {
-        img.src = src;
-        img.removeAttribute('data-src');
-      }
-      imgObserver.unobserve(img);
-    }
-  });
-}, { root: gridWrap, rootMargin: '200px 0px 400px 0px', threshold: 0 });
+        <div class="menu-size-block">
+            <span class="menu-block-label">🌼 Flower Size</span>
+            <div class="size-control-row">
+                <button class="size-btn" id="decreaseFlowerSizeBtn" type="button">−</button>
+                <input type="number" id="flowerSizeInput" class="size-input" min="14" max="35" step="2" value="24">
+                <button class="size-btn" id="increaseFlowerSizeBtn" type="button">+</button>
+            </div>
+        </div>
 
-const CHECKMARK_SVG = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+        <button class="menu-item-btn" id="speedUp">⚡ Flight Speed</button>
+        <button class="menu-item-btn" id="shuffleFlowers">🌸 Refresh Flowers</button>
+        <button class="menu-item-btn accent" id="loveNote">💌 For You</button>
+        <button class="menu-item-btn accent" id="celebrateBtn">🎉 Celebrate</button>
+        <button class="menu-item-btn accent" id="logoutBtn">🔒 Logout</button>
+    </div>
 
-function makeCell(id, p) {
-  const cell = document.createElement('div');
-  cell.className = 'cell' + (selected.has(id) ? ' selected' : '');
-  cell.dataset.id = id;
-  const img = document.createElement('img');
-  img.dataset.src = p.url;
-  img.src = '';
-  img.loading = 'lazy';
-  img.decoding = 'async';
-  cell.appendChild(img);
-  imgObserver.observe(img);
-  const check = document.createElement('div');
-  check.className = 'checkmark';
-  check.innerHTML = CHECKMARK_SVG;
-  cell.appendChild(check);
-  return cell;
-}
+    <!-- Password Prompt Modal -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <span class="auth-icon">🔐</span>
+            <h3>Protected Garden</h3>
+            <input type="password" id="authPasswordInput" class="auth-input" placeholder="Enter Password" autocomplete="current-password">
+            <label class="auth-checkbox-row">
+                <input type="checkbox" id="rememberMeCheckbox" checked> Remember Me
+            </label>
+            <button class="auth-btn" id="authSubmitBtn">Unlock Garden</button>
+            <div class="auth-error" id="authErrorMsg"></div>
+        </div>
+    </div>
 
-function render() {
-  const list = Object.entries(photos).sort((a,b) =>
-    new Date(b[1].order).getTime() - new Date(a[1].order).getTime()
-  );
+    <div class="info-modal" id="infoModal">✨ WELCOME ✨</div>
 
-  if (list.length === 0) {
-    emptyEl.style.display = 'flex';
-    initSpinner.style.display = 'none';
-    emptyText.style.display = 'flex';
-    grid.innerHTML = '';
-    return;
-  }
-  emptyEl.style.display = 'none';
-  initSpinner.style.display = 'none';
+    <!-- Upload Wing Overlay -->
+    <div class="wing-upload-overlay" id="wingUploadOverlay">
+        <div class="auth-card wing-upload-card">
+            <span class="auth-icon">🦋</span>
+            <div class="full-butterfly-upload-section">
+                <label class="full-upload-box" id="fullButterflyBox">
+                    <span id="fullButterflyContent">🖼️ Upload Full Butterfly Image</span>
+                    <input type="file" accept="image/*" id="fullButterflyInput" style="display:none;">
+                </label>
+            </div>
+            <h3>Upload Wing Photos</h3>
+            <div class="wing-upload-slots">
+                <div class="wing-upload-slot">
+                    <label class="upload-box" id="leftWingBox">
+                        <span id="leftWingContent">➕</span>
+                        <input type="file" accept="image/*" id="leftWingInput" style="display:none;">
+                    </label>
+                    <span class="slot-label">Left Wing</span>
+                </div>
+                <div class="wing-upload-slot">
+                    <label class="upload-box" id="rightWingBox">
+                        <span id="rightWingContent">➕</span>
+                        <input type="file" accept="image/*" id="rightWingInput" style="display:none;">
+                    </label>
+                    <span class="slot-label">Right Wing</span>
+                </div>
+            </div>
+            <div class="wing-size-control">
+                <span class="slot-label">Butterfly Size</span>
+                <div class="size-control-row">
+                    <button class="size-btn" id="decreaseSizeBtn" type="button">−</button>
+                    <input type="number" id="wingSizeInput" class="size-input" min="20" max="90" step="2" value="42">
+                    <button class="size-btn" id="increaseSizeBtn" type="button">+</button>
+                </div>
+            </div>
+            <div class="wing-upload-actions">
+                <button class="auth-btn" id="applyWingBtn">Apply Wings</button>
+                <button class="menu-item-btn accent" id="resetWingBtn">↺ Reset to Default</button>
+                <button class="menu-item-btn" id="closeWingUpload">Close</button>
+            </div>
+        </div>
+    </div>
 
-  // Diff: only add new, remove deleted
-  const existingIds = new Set([...grid.querySelectorAll('.cell[data-id]')].map(c => c.dataset.id));
-  const newIds = new Set(list.map(([id]) => id));
+    <!-- Word Layout Overlay - Full Screen -->
+    <div id="wordLayoutOverlay" style="
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:200;
+        background:#b2ebf2;
+        flex-direction:column;
+        overflow:hidden;
+    ">
+        <!-- Header bar -->
+        <div style="
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            background:#00bcd4;
+            padding:14px 16px;
+            flex-shrink:0;
+        ">
+            <span style="font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:2px;">WORD LAYOUT</span>
+            <button id="wordLayoutClose" style="
+                background:none;border:none;cursor:pointer;
+                font-size:22px;color:#fff;font-weight:700;line-height:1;padding:0 4px;
+            ">✕</button>
+        </div>
 
-  existingIds.forEach(id => {
-    if (!newIds.has(id)) {
-      const el = grid.querySelector(`.cell[data-id="${id}"]`);
-      if (el) el.remove();
-    }
-  });
+        <!-- Add row -->
+        <div style="
+            display:flex;
+            gap:10px;
+            padding:14px 14px 10px;
+            flex-shrink:0;
+            background:#b2ebf2;
+        ">
+            <input type="text" id="wordLayoutInput" maxlength="1" placeholder="A-Z" autocomplete="off"
+                style="
+                    flex:1;
+                    border:2px solid #80deea;
+                    border-radius:10px;
+                    padding:11px 14px;
+                    font-size:15px;
+                    font-family:'Plus Jakarta Sans',sans-serif;
+                    background:#fff;
+                    color:#333;
+                    outline:none;
+                    user-select:text;
+                    -webkit-user-select:text;
+                ">
+            <button id="wordLayoutAddBtn" style="
+                background:#00bcd4;
+                color:#fff;
+                border:none;
+                border-radius:10px;
+                padding:11px 16px;
+                font-size:14px;
+                font-weight:700;
+                font-family:'Plus Jakarta Sans',sans-serif;
+                cursor:pointer;
+                white-space:nowrap;
+                flex-shrink:0;
+            ">+ ADD</button>
+        </div>
 
-  const frag = document.createDocumentFragment();
-  list.forEach(([id, p]) => {
-    if (!existingIds.has(id)) frag.appendChild(makeCell(id, p));
-  });
-  if (frag.childNodes.length > 0) grid.prepend(frag);
+        <!-- List -->
+        <div id="wordLayoutList" style="
+            flex:1;
+            overflow-y:auto;
+            -webkit-overflow-scrolling:touch;
+            overscroll-behavior:contain;
+            padding:4px 14px 20px;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        "></div>
+    </div>
 
-  // Re-order DOM to match sorted list
-  list.forEach(([id], i) => {
-    const el = grid.querySelector(`.cell[data-id="${id}"]`);
-    if (el && grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);
-  });
-}
+    <!-- Bottom Letter Tabs Bar -->
+    <div id="letterTabsBar"></div>
 
-function compressImage(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        function resizeTo(src, maxPx) {
-          let w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
-          if (w > h) { if (w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; } }
-          else { if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; } }
-          const c = document.createElement('canvas');
-          c.width = w; c.height = h;
-          c.getContext('2d').drawImage(src, 0, 0, w, h);
-          return c;
+    <div class="butterfly-container" id="butterfly">
+        <div class="rest-bubble">💤</div>
+        <div class="butterfly-body"></div>
+        <div class="wing-layer">
+            <div class="wing left">🦋</div>
+            <div class="wing right">🦋</div>
+        </div>
+    </div>
+
+    <div class="love-overlay" id="loveOverlay">
+        <div class="love-card">
+            <span class="love-icon">💖</span>
+            <h2>For My Rahima</h2>
+            <p>Is screen ka har ek phool mere pyar ka ek chhota sa hissa hai. Humare ghar ka dil banne ke liye aur Zaina ki sabse shandar mommy hone ke liye bahut-bahut shukriya. Aapke liye hamesha shukrguzaar hoon, hamesha aapka hi hoon.</p>
+            <button id="closeLove">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Safe storage wrapper - never lets a blocked/unavailable localStorage crash the app
+        const safeStorage = (function() {
+            let memoryStore = {};
+            let available = true;
+            try {
+                const testKey = '__rahima_test__';
+                window.localStorage.setItem(testKey, '1');
+                window.localStorage.removeItem(testKey);
+            } catch (e) {
+                available = false;
+            }
+            return {
+                getItem(key) {
+                    if (available) {
+                        try { return window.localStorage.getItem(key); } catch (e) { available = false; }
+                    }
+                    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+                },
+                setItem(key, value) {
+                    if (available) {
+                        try { window.localStorage.setItem(key, value); return; } catch (e) { available = false; }
+                    }
+                    memoryStore[key] = String(value);
+                },
+                removeItem(key) {
+                    if (available) {
+                        try { window.localStorage.removeItem(key); return; } catch (e) { available = false; }
+                    }
+                    delete memoryStore[key];
+                }
+            };
+        })();
+
+        // ── Durable IndexedDB-backed backup store ──
+        // Some mobile WebViews clear or sandbox localStorage between app
+        // restarts even though it "works" during the live session. IndexedDB
+        // is far more durable in those environments, so every write is
+        // mirrored there and used to recover data on next launch.
+        const durableDB = (function() {
+            let dbPromise = null;
+            function openDB() {
+                if (dbPromise) return dbPromise;
+                dbPromise = new Promise((resolve) => {
+                    try {
+                        const req = window.indexedDB.open('rahimaGardenDB', 1);
+                        req.onupgradeneeded = () => {
+                            try { req.result.createObjectStore('kv'); } catch (e) {}
+                        };
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => resolve(null);
+                    } catch (e) { resolve(null); }
+                });
+                return dbPromise;
+            }
+            return {
+                async set(key, value) {
+                    try {
+                        const db = await openDB();
+                        if (!db) return;
+                        const tx = db.transaction('kv', 'readwrite');
+                        tx.objectStore('kv').put({ value: value, ts: Date.now() }, key);
+                    } catch (e) {}
+                },
+                async get(key) {
+                    try {
+                        const db = await openDB();
+                        if (!db) return null;
+                        return await new Promise((resolve) => {
+                            const tx = db.transaction('kv', 'readonly');
+                            const req = tx.objectStore('kv').get(key);
+                            req.onsuccess = () => resolve(req.result || null);
+                            req.onerror = () => resolve(null);
+                        });
+                    } catch (e) { return null; }
+                }
+            };
+        })();
+
+        // Ambient background particles
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'ambient-particle';
+            const size = 3 + Math.random() * 6;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDuration = (10 + Math.random() * 12) + 's';
+            particle.style.animationDelay = (Math.random() * 6) + 's';
+            document.body.appendChild(particle);
         }
-        let c = resizeTo(img, 800);
-        let out = c.toDataURL('image/jpeg', 0.65);
-        if (out.length > 130 * 1024) out = c.toDataURL('image/jpeg', 0.45);
-        if (out.length > 100 * 1024) { c = resizeTo(img, 600); out = c.toDataURL('image/jpeg', 0.5); }
-        if (out.length > 80 * 1024)  { c = resizeTo(img, 480); out = c.toDataURL('image/jpeg', 0.45); }
-        resolve(out);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
 
-let currentPhotoList = [];
-let currentIndex = -1;
-
-function buildPhotoList() {
-  currentPhotoList = Object.entries(photos)
-    .sort((a, b) => new Date(b[1].order).getTime() - new Date(a[1].order).getTime())
-    .map(([id, p]) => ({ id, url: p.url }));
-}
-
-function updateNavButtons() {
-  const atStart = currentIndex <= 0;
-  const atEnd = currentIndex >= currentPhotoList.length - 1;
-  lbPrev.style.opacity = atStart ? '0.3' : '1';
-  lbPrev.style.pointerEvents = atStart ? 'none' : 'auto';
-  lbNext.style.opacity = atEnd ? '0.3' : '1';
-  lbNext.style.pointerEvents = atEnd ? 'none' : 'auto';
-  lbCounter.textContent = currentPhotoList.length ? (currentIndex + 1) + ' / ' + currentPhotoList.length : '';
-}
-
-/* ---- Thumbnail Strip ---- */
-/*
- * LOCKED ACTIVE THUMBNAIL BEHAVIOR
- * --------------------------------
- * The currently displayed photo is ALWAYS represented by the first
- * visible thumbnail in the strip. Its border stays visible.
- *
- * We do not move the active thumbnail to the middle anymore. Instead,
- * syncThumbnails() rebuilds the visible window so currentIndex becomes
- * position 0, while the remaining thumbnails follow it.
- */
-const THUMB_VISIBLE = 5; // active + following thumbnails
-
-function buildThumbnailStrip() {
-  lbThumbTrack.innerHTML = '';
-
-  currentPhotoList.forEach((photo, i) => {
-    const thumb = document.createElement('div');
-    thumb.className = 'lb-thumb';
-    thumb.dataset.idx = i;
-
-    const img = document.createElement('img');
-    img.src = photo.url;
-    img.alt = '';
-    img.draggable = false;
-
-    thumb.appendChild(img);
-
-    thumb.addEventListener('click', (e) => {
-      e.stopPropagation();
-
-      const idx = parseInt(thumb.dataset.idx, 10);
-      if (!Number.isFinite(idx) || idx === currentIndex) return;
-
-      // Grid/thumbnail selection becomes the new active photo immediately.
-      currentIndex = idx;
-
-      const p = currentPhotoList[currentIndex];
-      if (!p) return;
-
-      currentLightboxUrl = p.url;
-      scale = 1;
-      pointX = 0;
-      pointY = 0;
-
-      lightboxImg.style.display = 'block';
-      lightboxImg.src = p.url;
-
-      updateAdjacentImages();
-      setTrackTransition(false);
-      positionTrack(0);
-      updateNavButtons();
-
-      // IMPORTANT: move the selected thumbnail to the far-left position
-      // immediately and keep its active border.
-      syncThumbnails(true);
-    });
-
-    lbThumbTrack.appendChild(thumb);
-  });
-
-  // Initial lightbox open: selected photo is also locked to far-left.
-  syncThumbnails(true);
-}
-
-function syncThumbnails(animate = true) {
-  const total = currentPhotoList.length;
-  const thumbs = Array.from(lbThumbTrack.querySelectorAll('.lb-thumb'));
-
-  if (!total || !thumbs.length || currentIndex < 0) {
-    lbThumbTrack.style.transition = 'none';
-    lbThumbTrack.style.transform = 'translateX(0)';
-    return;
-  }
-
-  /*
-   * The thumbnail DOM order stays stable, but the visible window is
-   * rebuilt around currentIndex by translating the track.
-   *
-   * Because the active thumbnail is 68px while normal thumbnails are
-   * 56px, calculate the exact distance using the actual element widths.
-   * This prevents the active item from being slightly off the left edge.
-   */
-  thumbs.forEach((t, i) => {
-    t.classList.toggle('active', i === currentIndex);
-  });
-
-  // Put the current thumbnail at the far-left edge.
-  // Measure the width of every item before currentIndex so the offset
-  // remains correct even when the active thumbnail has a different size.
-  let offset = 0;
-  for (let i = 0; i < currentIndex; i++) {
-    const rect = thumbs[i].getBoundingClientRect();
-    offset += rect.width + 6; // thumbnail width + gap
-  }
-
-  /*
-   * When moving backward, the active thumbnail must also become the
-   * first visible item. translateX() therefore uses the complete
-   * accumulated width of all thumbnails before currentIndex.
-   */
-  lbThumbTrack.style.transition = animate
-    ? 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)'
-    : 'none';
-  lbThumbTrack.style.transform = `translateX(${-offset}px)`;
-
-  /*
-   * Keep the active thumbnail visually pinned at the far-left position.
-   * The extra timeout handles the active thumbnail's width transition.
-   */
-  if (animate) {
-    setTimeout(() => {
-      if (currentIndex < 0) return;
-
-      const currentThumb = lbThumbTrack.querySelector(
-        `.lb-thumb[data-idx="${currentIndex}"]`
-      );
-
-      if (!currentThumb) return;
-
-      let exactOffset = 0;
-      thumbs.forEach((t, i) => {
-        if (i < currentIndex) {
-          exactOffset += t.offsetWidth + 6;
+        // Fireflies
+        for (let i = 0; i < 18; i++) {
+            const firefly = document.createElement('div');
+            firefly.className = 'firefly';
+            firefly.style.left = Math.random() * 100 + 'vw';
+            firefly.style.top = Math.random() * 100 + 'vh';
+            firefly.style.setProperty('--dx', (Math.random() * 180 - 90) + 'px');
+            firefly.style.setProperty('--dy', (Math.random() * 180 - 90) + 'px');
+            firefly.style.animationDuration = (4 + Math.random() * 4) + 's';
+            firefly.style.animationDelay = (Math.random() * 3) + 's';
+            document.body.appendChild(firefly);
         }
-      });
 
-      lbThumbTrack.style.transform = `translateX(${-exactOffset}px)`;
-    }, 260);
-  }
-}
-/* ---- End Thumbnail Strip ---- */
+        const butterfly = document.getElementById('butterfly');
+        const flowersPool = ['🌻', '🌹', '🌺', '🌼', '🌷', '🌸', '💐', '🪷'];
 
-function getContainerWidth() {
-  containerWidth = imgContainer.clientWidth || window.innerWidth;
-  return containerWidth;
-}
+        // 'R' Letter Matrix
+        const perfectRGrid = [
+            {x: 20, y: 15, delay: 0.0}, {x: 20, y: 22, delay: 0.04}, {x: 20, y: 29, delay: 0.08}, {x: 20, y: 36, delay: 0.12}, {x: 20, y: 43, delay: 0.16}, {x: 20, y: 50, delay: 0.20}, {x: 20, y: 57, delay: 0.24}, {x: 20, y: 64, delay: 0.28}, {x: 20, y: 71, delay: 0.32}, {x: 20, y: 78, delay: 0.36}, {x: 20, y: 85, delay: 0.40},
+            {x: 27, y: 15, delay: 0.02}, {x: 27, y: 22, delay: 0.06}, {x: 27, y: 29, delay: 0.10}, {x: 27, y: 36, delay: 0.14}, {x: 27, y: 43, delay: 0.18}, {x: 27, y: 50, delay: 0.22}, {x: 27, y: 57, delay: 0.26}, {x: 27, y: 64, delay: 0.30}, {x: 27, y: 71, delay: 0.34}, {x: 27, y: 78, delay: 0.38}, {x: 27, y: 85, delay: 0.42},
+            {x: 35, y: 13, delay: 0.46}, {x: 44, y: 12, delay: 0.50}, {x: 54, y: 12, delay: 0.54}, {x: 64, y: 14, delay: 0.58}, {x: 74, y: 20, delay: 0.62}, {x: 79, y: 28, delay: 0.66}, {x: 77, y: 38, delay: 0.70}, {x: 70, y: 46, delay: 0.74}, {x: 58, y: 50, delay: 0.78}, {x: 45, y: 50, delay: 0.82}, {x: 35, y: 50, delay: 0.86},
+            {x: 35, y: 20, delay: 0.48}, {x: 44, y: 19, delay: 0.52}, {x: 54, y: 19, delay: 0.56}, {x: 62, y: 22, delay: 0.60}, {x: 69, y: 28, delay: 0.64}, {x: 71, y: 36, delay: 0.68}, {x: 66, y: 42, delay: 0.72}, {x: 56, y: 45, delay: 0.76}, {x: 45, y: 45, delay: 0.80}, {x: 35, y: 45, delay: 0.84},
+            {x: 38, y: 56, delay: 0.90}, {x: 45, y: 62, delay: 0.94}, {x: 53, y: 68, delay: 0.98}, {x: 61, y: 74, delay: 1.02}, {x: 69, y: 80, delay: 1.06}, {x: 77, y: 86, delay: 1.10},
+            {x: 42, y: 54, delay: 0.92}, {x: 49, y: 60, delay: 0.96}, {x: 57, y: 66, delay: 1.00}, {x: 65, y: 72, delay: 1.04}, {x: 73, y: 78, delay: 1.08}, {x: 81, y: 84, delay: 1.12}
+        ];
 
-function setImgSrc(el, url) {
-  if (url) {
-    if (el.src !== url) el.src = url;
-    el.style.visibility = 'visible';
-  } else {
-    el.removeAttribute('src');
-    el.style.visibility = 'hidden';
-  }
-}
-
-/* Preload the neighbouring photos so the swipe never shows a blank/loading frame */
-function updateAdjacentImages() {
-  const prevPhoto = currentPhotoList[currentIndex - 1];
-  const nextPhoto = currentPhotoList[currentIndex + 1];
-  setImgSrc(lbImgPrev, prevPhoto ? prevPhoto.url : '');
-  setImgSrc(lbImgNext, nextPhoto ? nextPhoto.url : '');
-}
-
-function setTrackTransition(on) {
-  const t = on ? 'transform 0.26s cubic-bezier(0.25,1,0.5,1)' : 'none';
-  lbImgPrev.style.transition = t;
-  lightboxImg.style.transition = t;
-  lbImgNext.style.transition = t;
-}
-
-/* Positions all three images together as one strip: prev stuck on the left edge,
-   next stuck on the right edge of the current photo, so dragging reveals the
-   next photo sliding in attached — no fade, no blink. */
-function positionTrack(dragPx) {
-  const w = containerWidth || getContainerWidth();
-  lbImgPrev.style.transform = `translate(-50%,-50%) translate3d(${-w + dragPx}px, 0, 0)`;
-  lightboxImg.style.transform = `translate(-50%,-50%) translate3d(${dragPx + pointX}px, ${pointY}px, 0) scale(${scale})`;
-  lbImgNext.style.transform = `translate(-50%,-50%) translate3d(${w + dragPx}px, 0, 0)`;
-}
-
-function loadLightboxPhoto(index, instant) {
-  if (!currentPhotoList[index]) return;
-  currentIndex = index;
-  const photo = currentPhotoList[index];
-  currentLightboxUrl = photo.url;
-  scale = 1; pointX = 0; pointY = 0;
-  getContainerWidth();
-
-  if (instant) {
-    lbLoading.style.display = 'flex';
-    lightboxImg.style.display = 'none';
-    lightboxImg.onload = () => {
-      lbLoading.style.display = 'none';
-      lightboxImg.style.display = 'block';
-    };
-    lightboxImg.src = photo.url;
-  } else {
-    lightboxImg.style.display = 'block';
-    lightboxImg.src = photo.url;
-  }
-
-  updateAdjacentImages();
-  setTrackTransition(false);
-  positionTrack(0);
-  updateNavButtons();
-}
-
-/* Slides the whole strip fully over to the neighbouring photo, then swaps the
-   loaded src into the (already-cached) main image — visually seamless. */
-function completeSlide(direction) {
-  const targetIndex = currentIndex + direction;
-  if (!currentPhotoList[targetIndex]) { bounceEdge(direction); return; }
-  getContainerWidth();
-  setTrackTransition(true);
-  positionTrack(direction === 1 ? -containerWidth : containerWidth);
-  setTimeout(() => {
-    currentIndex = targetIndex;
-    const photo = currentPhotoList[currentIndex];
-    currentLightboxUrl = photo.url;
-    scale = 1; pointX = 0; pointY = 0;
-    setTrackTransition(false);
-    lightboxImg.src = photo.url;
-    updateAdjacentImages();
-    positionTrack(0);
-    updateNavButtons();
-
-    // New photo is now displayed: immediately lock its thumbnail
-    // to the far-left position with the active border.
-    syncThumbnails(true);
-  }, 260);
-}
-
-function bounceEdge(direction) {
-  setTrackTransition(true);
-  positionTrack(direction === 1 ? -22 : 22);
-  setTimeout(() => {
-    setTrackTransition(true);
-    positionTrack(0);
-  }, 150);
-}
-
-function goToNext() {
-  if (currentIndex < currentPhotoList.length - 1) {
-    completeSlide(1);
-  } else {
-    bounceEdge(1);
-  }
-}
-
-function goToPrev() {
-  if (currentIndex > 0) {
-    completeSlide(-1);
-  } else {
-    bounceEdge(-1);
-  }
-}
-
-function openLightbox(id) {
-  buildPhotoList();
-  const idx = currentPhotoList.findIndex(p => p.id === id);
-  currentIndex = idx >= 0 ? idx : 0;
-  lightboxOverlay.style.display = 'flex';
-  loadLightboxPhoto(currentIndex, true);
-  buildThumbnailStrip();
-  history.pushState({ lightboxOpen: true }, '', '#lightbox');
-}
-
-function closeLightbox() {
-  if (lightboxOverlay.style.display === 'flex') {
-    lightboxOverlay.style.display = 'none';
-    if (window.location.hash === '#lightbox') {
-      history.back();
-    }
-  }
-}
-
-window.addEventListener('popstate', () => {
-  if (lightboxOverlay.style.display === 'flex') {
-    lightboxOverlay.style.display = 'none';
-  }
-});
-
-lbClose.addEventListener('click', closeLightbox);
-lbNext.addEventListener('click', (e) => { e.stopPropagation(); goToNext(); });
-lbPrev.addEventListener('click', (e) => { e.stopPropagation(); goToPrev(); });
-
-document.addEventListener('keydown', (e) => {
-  if (lightboxOverlay.style.display === 'flex') {
-    if (e.key === 'ArrowRight') goToNext();
-    else if (e.key === 'ArrowLeft') goToPrev();
-    else if (e.key === 'Escape') closeLightbox();
-  }
-});
-
-function toggleCellAtPoint(x, y) {
-  const el = document.elementFromPoint(x, y);
-  if (el) {
-    const cell = el.closest('.cell');
-    if (cell && cell.dataset.id) {
-      const id = cell.dataset.id;
-      if (dragInitialState) {
-        if (!selected.has(id)) {
-          selected.add(id);
-          cell.classList.add('selected');
-          updateHeaderState();
+        function buildSegmentPoints(x1, y1, x2, y2, spacing, offset) {
+            spacing = spacing || 7;
+            offset = offset || 7;
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.sqrt(dx * dx + dy * dy) || 1;
+            const steps = Math.max(2, Math.round(len / spacing));
+            const nx = -dy / len, ny = dx / len;
+            const pts = [];
+            for (let s = 0; s <= steps; s++) {
+                const t = s / steps;
+                const px = x1 + dx * t, py = y1 + dy * t;
+                pts.push({ x: px + (nx * offset) / 2, y: py + (ny * offset) / 2 });
+                pts.push({ x: px - (nx * offset) / 2, y: py - (ny * offset) / 2 });
+            }
+            return pts;
         }
-      } else {
-        if (selected.has(id)) {
-          selected.delete(id);
-          cell.classList.remove('selected');
-          updateHeaderState();
+
+        function buildLetterFromSegments(segments) {
+            let all = [];
+            segments.forEach(([x1, y1, x2, y2]) => {
+                all = all.concat(buildSegmentPoints(x1, y1, x2, y2));
+            });
+            const maxDelay = 1.15;
+            return all.map((p, i) => ({
+                x: p.x,
+                y: p.y,
+                delay: Math.min(maxDelay, i * (maxDelay / Math.max(1, all.length - 1)))
+            }));
         }
-      }
-    }
-  }
-}
 
-gridWrap.addEventListener('touchstart', (e) => {
-  const touch = e.touches[0];
-  startY = touch.clientY;
-  const el = document.elementFromPoint(touch.clientX, touch.clientY);
-  const cell = el ? el.closest('.cell') : null;
-
-  if (cell && cell.dataset.id) {
-    longPressTimer = setTimeout(() => {
-      isDragSelecting = true;
-      const id = cell.dataset.id;
-      dragInitialState = !selected.has(id);
-      
-      if (dragInitialState) {
-        selected.add(id);
-        cell.classList.add('selected');
-      } else {
-        selected.delete(id);
-        cell.classList.remove('selected');
-      }
-      
-      if (navigator.vibrate) navigator.vibrate(40);
-      updateHeaderState();
-    }, 300);
-  }
-}, {passive: true});
-
-gridWrap.addEventListener('touchmove', (e) => {
-  const touch = e.touches[0];
-  if (isDragSelecting) {
-    if (e.cancelable) e.preventDefault();
-    toggleCellAtPoint(touch.clientX, touch.clientY);
-  } else {
-    if (Math.abs(touch.clientY - startY) > 8) {
-      clearTimeout(longPressTimer);
-    }
-  }
-}, {passive: false});
-
-gridWrap.addEventListener('touchend', () => {
-  clearTimeout(longPressTimer);
-  isDragSelecting = false;
-});
-
-gridWrap.addEventListener('click', (e) => {
-  const cell = e.target.closest('.cell');
-  if (!cell || !cell.dataset.id) return;
-  const id = cell.dataset.id;
-
-  if (selected.size > 0) {
-    if (selected.has(id)) {
-      selected.delete(id);
-      cell.classList.remove('selected');
-    } else {
-      selected.add(id);
-      cell.classList.add('selected');
-    }
-    updateHeaderState();
-  } else if (photos[id]) {
-    openLightbox(id);
-  }
-});
-
-/* SMOOTH ZOOM & PANNING WITH BOUNDARIES */
-let scale = 1, pointX = 0, pointY = 0;
-let startTouchX = 0, startTouchY = 0, lastDist = 0;
-let isPanning = false;
-let lastTapTime = 0;
-let swipeTracking = false;
-let swipeStartX = 0, swipeStartY = 0;
-
-function clampBoundaries() {
-  const containerRect = imgContainer.getBoundingClientRect();
-  if (scale <= 1) {
-    pointX = 0;
-    pointY = 0;
-    return;
-  }
-  const renderedWidth = lightboxImg.offsetWidth * scale;
-  const renderedHeight = lightboxImg.offsetHeight * scale;
-  const maxTransX = Math.max(0, (renderedWidth - containerRect.width) / 2);
-  const maxTransY = Math.max(0, (renderedHeight - containerRect.height) / 2);
-
-  pointX = Math.min(Math.max(pointX, -maxTransX), maxTransX);
-  pointY = Math.min(Math.max(pointY, -maxTransY), maxTransY);
-}
-
-function updateTransform(smooth = false) {
-  clampBoundaries();
-  lightboxImg.style.transition = smooth ? 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
-  lightboxImg.style.transform = `translate(-50%,-50%) translate3d(${pointX}px, ${pointY}px, 0px) scale(${scale})`;
-}
-
-function resetZoom() {
-  scale = 1; pointX = 0; pointY = 0;
-  updateTransform(true);
-}
-
-imgContainer.addEventListener('touchstart', (e) => {
-  if (e.touches.length === 1) {
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTapTime;
-    if (tapLength < 300 && tapLength > 0) {
-      if (scale > 1) {
-        resetZoom();
-      } else {
-        scale = 2.5;
-        updateTransform(true);
-      }
-      e.preventDefault();
-      swipeTracking = false;
-      return;
-    }
-    lastTapTime = currentTime;
-
-    if (scale > 1) {
-      isPanning = true;
-      swipeTracking = false;
-      startTouchX = e.touches[0].clientX - pointX;
-      startTouchY = e.touches[0].clientY - pointY;
-    } else {
-      swipeTracking = true;
-      swipeStartX = e.touches[0].clientX;
-      swipeStartY = e.touches[0].clientY;
-    }
-  } else if (e.touches.length === 2) {
-    isPanning = false;
-    swipeTracking = false;
-    lastDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-  }
-});
-
-imgContainer.addEventListener('touchmove', (e) => {
-  if (isPanning && e.touches.length === 1 && scale > 1) {
-    pointX = e.touches[0].clientX - startTouchX;
-    pointY = e.touches[0].clientY - startTouchY;
-    updateTransform(false);
-  } else if (swipeTracking && e.touches.length === 1 && scale <= 1) {
-    const dx = e.touches[0].clientX - swipeStartX;
-    const dy = e.touches[0].clientY - swipeStartY;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (e.cancelable) e.preventDefault();
-      setTrackTransition(false);
-      positionTrack(dx);
-    }
-  } else if (e.touches.length === 2) {
-    let dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    let factor = dist / lastDist;
-    scale = Math.min(Math.max(scale * factor, 1), 4);
-    lastDist = dist;
-    updateTransform(false);
-  }
-});
-
-imgContainer.addEventListener('touchend', (e) => {
-  if (e.touches.length === 0) {
-    isPanning = false;
-    if (swipeTracking) {
-      swipeTracking = false;
-      const touch = e.changedTouches[0];
-      const dx = touch.clientX - swipeStartX;
-      const dy = touch.clientY - swipeStartY;
-      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-        if (dx < 0) goToNext(); else goToPrev();
-      } else {
-        setTrackTransition(true);
-        positionTrack(0);
-      }
-      return;
-    }
-    if (scale < 1) {
-      resetZoom();
-    } else {
-      updateTransform(true);
-    }
-  }
-});
-
-imgContainer.addEventListener('touchcancel', () => {
-  isPanning = false;
-  if (swipeTracking) {
-    swipeTracking = false;
-    setTrackTransition(true);
-    positionTrack(0);
-  }
-});
-
-/* Mouse drag swipe support (desktop) */
-let mouseSwipeActive = false;
-
-imgContainer.addEventListener('mousedown', (e) => {
-  if (scale <= 1) {
-    mouseSwipeActive = true;
-    swipeStartX = e.clientX;
-    swipeStartY = e.clientY;
-    e.preventDefault();
-  }
-});
-
-imgContainer.addEventListener('mousemove', (e) => {
-  if (mouseSwipeActive) {
-    const dx = e.clientX - swipeStartX;
-    const dy = e.clientY - swipeStartY;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      setTrackTransition(false);
-      positionTrack(dx);
-    }
-  }
-});
-
-function endMouseSwipe(e) {
-  if (!mouseSwipeActive) return;
-  mouseSwipeActive = false;
-  const dx = e.clientX - swipeStartX;
-  const dy = e.clientY - swipeStartY;
-  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-    if (dx < 0) goToNext(); else goToPrev();
-  } else {
-    setTrackTransition(true);
-    positionTrack(0);
-  }
-}
-
-imgContainer.addEventListener('mouseup', endMouseSwipe);
-imgContainer.addEventListener('mouseleave', (e) => {
-  if (mouseSwipeActive) endMouseSwipe(e);
-});
-
-lbDownload.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (!currentLightboxUrl) return;
-  const a = document.createElement('a');
-  a.href = currentLightboxUrl;
-  a.download = `Zaina_Photo_${Date.now()}.jpg`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-});
-
-addBtn.addEventListener('click', () => fileInput.click());
-
-function makeTempCell(id) {
-  const tempCell = document.createElement('div');
-  tempCell.className = 'cell uploading';
-  tempCell.dataset.id = id;
-  return tempCell;
-}
-
-  function uploadOne(file, id, timeFormatted, tempCell) {
-  return new Promise(async (resolve) => {
-    try {
-      const compressedDataUrl = await compressImage(file);
-      const photoData = { url: compressedDataUrl, order: timeFormatted };
-      await photosRef.child(id).set(photoData);
-      // Immediately cache — child_added will also fire but no harm
-      photos[id] = photoData;
-      await addToCache(id, photoData);
-      resolve(true);
-    } catch (err) { resolve(false); }
-  });
-}
-
-fileInput.addEventListener('change', (e) => {
-  const files = Array.from(e.target.files);
-  fileInput.value = '';
-  if (!files.length) return;
-  emptyEl.style.display = 'none';
-  const now = Date.now();
-  files.forEach((file, i) => {
-    const formattedOrder = getFormattedDateTime(now + (i * 1000));
-    const id = photosRef.push().key;
-    const tempCell = makeTempCell(id);
-    grid.prepend(tempCell);
-    uploadOne(file, id, formattedOrder, tempCell);
-  });
-});
-
-delBtn.addEventListener('click', () => {
-  if (selected.size === 0) return;
-  confirmText.textContent = selected.size + ' photo(s) delete karein?';
-  confirmOverlay.style.display = 'flex';
-});
-
-cancelDel.addEventListener('click', () => confirmOverlay.style.display = 'none');
-
-cancelSelBtn.addEventListener('click', () => {
-  selected.forEach(id => {
-    const cell = grid.querySelector(`.cell[data-id="${id}"]`);
-    if (cell) cell.classList.remove('selected');
-  });
-  selected.clear();
-  updateHeaderState();
-});
-
-okDel.addEventListener('click', async () => {
-  confirmOverlay.style.display = 'none';
-  const ids = Array.from(selected);
-  for (const id of ids) {
-    try {
-      await photosRef.child(id).remove();
-      delete photos[id];
-      await removeFromCache(id);
-      const el = grid.querySelector(`.cell[data-id="${id}"]`);
-      if (el) el.remove();
-    } catch (err) {}
-    selected.delete(id);
-  }
-  updateHeaderState();
-  if (Object.keys(photos).length === 0) {
-    emptyEl.style.display = 'flex';
-    initSpinner.style.display = 'none';
-    emptyText.style.display = 'flex';
-  }
-});
-
-/* App Init — IndexedDB async */
-(async () => {
-  const hasCache = await loadCachedPhotos();
-
-  if (hasCache && Object.keys(photos).length > 0) {
-    emptyEl.style.display = 'none';
-    render();
-  } else {
-    emptyEl.style.display = 'flex';
-    initSpinner.style.display = 'flex';
-    animateProgress(progressBarFill, progressText, () => {});
-  }
-
-  // Pehle once() — saara data ek baar lo
-  photosRef.once('value', async (snap) => {
-    const data = snap.val() || {};
-    photos = data;
-    await saveCachedPhotos(photos);
-    for (const id of Array.from(selected)) {
-      if (!photos[id]) selected.delete(id);
-    }
-    updateHeaderState();
-    if (Object.keys(photos).length === 0) {
-      emptyEl.style.display = 'flex';
-      initSpinner.style.display = 'none';
-      emptyText.style.display = 'flex';
-      grid.innerHTML = '';
-    } else {
-      render();
-    }
-
-    // Phir sirf changes sun — child_added & child_removed
-    photosRef.on('child_added', async (snap) => {
-      const id = snap.key;
-      if (photos[id]) return; // already have it
-      photos[id] = snap.val();
-      await addToCache(id, photos[id]);
-      render();
-    });
-
-    photosRef.on('child_removed', async (snap) => {
-      const id = snap.key;
-      delete photos[id];
-      await removeFromCache(id);
-      selected.delete(id);
-      const el = grid.querySelector(`.cell[data-id="${id}"]`);
-      if (el) el.remove();
-      updateHeaderState();
-    });
-  });
-})();
-
-// ===== Photo-Butterfly System (Firebase-synced) =====
-(function () {
-  const MIN_SIZE = 20, MAX_SIZE = 90, DEFAULT_SIZE = 42;
-  const CACHE_KEY = 'zaina_bf_cache_v1';
-  const SPEED_CACHE_KEY = 'zaina_bf_speed_cache_v1';
-  const butterfliesRef = db.ref('zaina_butterflies');
-  const speedRef = db.ref('zaina_settings/butterflySpeed');
-
-  let pbButterflies = {};   // id -> { left, right, size, order }
-  let pbEditingId = null;
-  let pbPending = { left: null, right: null };
-  let pbPendingSize = DEFAULT_SIZE;
-  let pbSpeedValue = 10;    // 1 (very slow) .. 20 (very fast), synced via Firebase
-
-  const pbSpeedSlider = document.getElementById('pbSpeedSlider');
-
-  // Instant local cache so butterflies appear the moment the app opens,
-  // without waiting for the Firebase round-trip.
-  function loadCache(key) {
-    try { const raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch (e) {}
-    return null;
-  }
-  function saveCache(key, val) {
-    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
-  }
-
-  const pbSettingsBtn   = document.getElementById('pbSettingsBtn');
-  const pbListOverlay   = document.getElementById('pbListOverlay');
-  const pbListEl        = document.getElementById('pbList');
-  const pbAddBtn        = document.getElementById('pbAddBtn');
-  const pbListClose     = document.getElementById('pbListClose');
-
-  const pbModifyOverlay = document.getElementById('pbModifyOverlay');
-  const pbFullBox       = document.getElementById('pbFullBox');
-  const pbFullInput     = document.getElementById('pbFullInput');
-  const pbFullContent   = document.getElementById('pbFullContent');
-  const pbLeftPreview   = document.getElementById('pbLeftPreview');
-  const pbRightPreview  = document.getElementById('pbRightPreview');
-  const pbSizeInput     = document.getElementById('pbSizeInput');
-  const pbSizeDec       = document.getElementById('pbSizeDec');
-  const pbSizeInc       = document.getElementById('pbSizeInc');
-  const pbApplyBtn      = document.getElementById('pbApplyBtn');
-  const pbResetBtn      = document.getElementById('pbResetBtn');
-  const pbModifyClose   = document.getElementById('pbModifyClose');
-  const pbFlyingLayer   = document.getElementById('pbFlyingLayer');
-
-  function pbOrderedList() {
-    return Object.keys(pbButterflies)
-      .map(id => Object.assign({ id }, pbButterflies[id]))
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
-  }
-
-  // PNG-based resize that keeps the alpha channel (JPEG has no transparency
-  // and would bake a black background onto the butterfly cutout).
-  function resizeKeepAlpha(file, maxPx, cb) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.naturalWidth, h = img.naturalHeight;
-        if (w > h) { if (w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; } }
-        else { if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; } }
-        const c = document.createElement('canvas');
-        c.width = w; c.height = h;
-        c.getContext('2d').drawImage(img, 0, 0, w, h);
-        cb(c.toDataURL('image/png'));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function splitFullImage(dataUrl, cb) {
-    const img = new Image();
-    img.onload = () => {
-      const w = img.naturalWidth, h = img.naturalHeight;
-      const halfW = Math.floor(w / 2);
-      const leftCanvas = document.createElement('canvas');
-      leftCanvas.width = halfW; leftCanvas.height = h;
-      leftCanvas.getContext('2d').drawImage(img, 0, 0, halfW, h, 0, 0, halfW, h);
-      const rightW = w - halfW;
-      const rightCanvas = document.createElement('canvas');
-      rightCanvas.width = rightW; rightCanvas.height = h;
-      rightCanvas.getContext('2d').drawImage(img, halfW, 0, rightW, h, 0, 0, rightW, h);
-      cb(leftCanvas.toDataURL('image/png'), rightCanvas.toDataURL('image/png'));
-    };
-    img.src = dataUrl;
-  }
-
-  pbFullBox.addEventListener('click', () => pbFullInput.click());
-  pbFullInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    pbFullContent.innerHTML = '⏳ Processing…';
-    resizeKeepAlpha(file, 800, (dataUrl) => {
-      splitFullImage(dataUrl, (l, r) => {
-        pbPending.left = l;
-        pbPending.right = r;
-        pbLeftPreview.innerHTML = `<img src="${l}" alt="left wing preview">`;
-        pbRightPreview.innerHTML = `<img src="${r}" alt="right wing preview">`;
-        pbFullContent.innerHTML = `<img src="${dataUrl}" class="pb-full-thumb" alt="full preview">Full Image Split ✔`;
-      });
-    });
-  });
-
-  function applyPbSize(size) {
-    pbPendingSize = Math.min(MAX_SIZE, Math.max(MIN_SIZE, parseInt(size) || DEFAULT_SIZE));
-    pbSizeInput.value = pbPendingSize;
-  }
-  pbSizeDec.addEventListener('click', () => applyPbSize(pbPendingSize - 2));
-  pbSizeInc.addEventListener('click', () => applyPbSize(pbPendingSize + 2));
-  pbSizeInput.addEventListener('change', () => applyPbSize(pbSizeInput.value));
-
-  function openModify(entry) {
-    pbEditingId = entry ? entry.id : null;
-    pbPending = { left: entry ? entry.left : null, right: entry ? entry.right : null };
-    applyPbSize(entry ? entry.size : DEFAULT_SIZE);
-    pbLeftPreview.innerHTML = entry && entry.left ? `<img src="${entry.left}" alt="left wing preview">` : '➕';
-    pbRightPreview.innerHTML = entry && entry.right ? `<img src="${entry.right}" alt="right wing preview">` : '➕';
-    pbFullContent.innerHTML = '🖼️ Upload Full Butterfly Image';
-    pbFullInput.value = '';
-    pbModifyOverlay.classList.add('show');
-  }
-  function closeModify() { pbModifyOverlay.classList.remove('show'); }
-
-  pbModifyClose.addEventListener('click', closeModify);
-  pbModifyOverlay.addEventListener('click', (e) => { if (e.target === pbModifyOverlay) closeModify(); });
-
-  pbResetBtn.addEventListener('click', () => {
-    pbPending = { left: null, right: null };
-    applyPbSize(DEFAULT_SIZE);
-    pbLeftPreview.innerHTML = '➕';
-    pbRightPreview.innerHTML = '➕';
-    pbFullContent.innerHTML = '🖼️ Upload Full Butterfly Image';
-    pbFullInput.value = '';
-  });
-
-  pbApplyBtn.addEventListener('click', async () => {
-    if (!pbPending.left && !pbPending.right && !pbEditingId) { closeModify(); return; }
-    pbApplyBtn.disabled = true;
-    try {
-      if (pbEditingId) {
-        const existing = pbButterflies[pbEditingId] || {};
-        const merged = {
-          left: pbPending.left || existing.left || null,
-          right: pbPending.right || existing.right || null,
-          size: pbPendingSize,
-          order: existing.order || Date.now()
+        const LETTER_BUILDERS = {
+            R: () => perfectRGrid,
+            A: () => buildLetterFromSegments([
+                [50, 12, 20, 85],
+                [50, 12, 80, 85],
+                [33, 52, 67, 52]
+            ]),
+            H: () => buildLetterFromSegments([
+                [22, 13, 22, 85],
+                [78, 13, 78, 85],
+                [22, 49, 78, 49]
+            ]),
+            I: () => buildLetterFromSegments([
+                [35, 13, 65, 13],
+                [50, 13, 50, 85],
+                [35, 85, 65, 85]
+            ]),
+            M: () => buildLetterFromSegments([
+                [20, 85, 20, 13],
+                [80, 85, 80, 13],
+                [20, 13, 50, 55],
+                [80, 13, 50, 55]
+            ]),
+            B: () => buildLetterFromSegments([
+                [22, 13, 22, 85], [22, 13, 62, 13], [22, 49, 65, 49], [22, 85, 62, 85],
+                [62, 13, 76, 28], [76, 28, 62, 49], [65, 49, 78, 67], [78, 67, 62, 85]
+            ]),
+            C: () => buildLetterFromSegments([
+                [78, 20, 50, 13], [50, 13, 25, 30], [25, 30, 25, 70], [25, 70, 50, 87], [50, 87, 78, 80]
+            ]),
+            D: () => buildLetterFromSegments([
+                [22, 13, 22, 85], [22, 13, 50, 13], [50, 13, 80, 35], [80, 35, 80, 63], [80, 63, 50, 85], [50, 85, 22, 85]
+            ]),
+            E: () => buildLetterFromSegments([
+                [24, 13, 24, 85], [24, 13, 78, 13], [24, 49, 65, 49], [24, 85, 78, 85]
+            ]),
+            F: () => buildLetterFromSegments([
+                [24, 13, 24, 85], [24, 13, 78, 13], [24, 49, 65, 49]
+            ]),
+            G: () => buildLetterFromSegments([
+                [78, 22, 50, 13], [50, 13, 24, 30], [24, 30, 24, 70], [24, 70, 50, 87], [50, 87, 78, 75], [78, 75, 78, 52], [78, 52, 55, 52]
+            ]),
+            J: () => buildLetterFromSegments([
+                [70, 13, 70, 68], [70, 68, 60, 83], [60, 83, 40, 83], [40, 83, 28, 72]
+            ]),
+            K: () => buildLetterFromSegments([
+                [24, 13, 24, 85], [24, 50, 76, 13], [24, 50, 76, 85]
+            ]),
+            L: () => buildLetterFromSegments([
+                [24, 13, 24, 85], [24, 85, 78, 85]
+            ]),
+            N: () => buildLetterFromSegments([
+                [24, 13, 24, 85], [24, 13, 78, 85], [78, 13, 78, 85]
+            ]),
+            O: () => buildLetterFromSegments([
+                [50, 13, 26, 30], [26, 30, 22, 50], [22, 50, 26, 70], [26, 70, 50, 85],
+                [50, 85, 74, 70], [74, 70, 78, 50], [78, 50, 74, 30], [74, 30, 50, 13]
+            ]),
+            P: () => buildLetterFromSegments([
+                [24, 13, 24, 85], [24, 13, 68, 13], [24, 49, 68, 49], [68, 13, 80, 31], [80, 31, 68, 49]
+            ]),
+            Q: () => buildLetterFromSegments([
+                [50, 13, 26, 30], [26, 30, 22, 50], [22, 50, 26, 70], [26, 70, 50, 85],
+                [50, 85, 74, 70], [74, 70, 78, 50], [78, 50, 74, 30], [74, 30, 50, 13],
+                [58, 65, 80, 90]
+            ]),
+            S: () => buildLetterFromSegments([
+                [78, 20, 50, 13], [50, 13, 25, 20], [25, 20, 25, 42], [25, 42, 75, 58],
+                [75, 58, 75, 80], [75, 80, 50, 87], [50, 87, 22, 80]
+            ]),
+            T: () => buildLetterFromSegments([
+                [22, 13, 78, 13], [50, 13, 50, 85]
+            ]),
+            U: () => buildLetterFromSegments([
+                [24, 13, 24, 65], [24, 65, 34, 83], [34, 83, 66, 83], [66, 83, 76, 65], [76, 65, 76, 13]
+            ]),
+            V: () => buildLetterFromSegments([
+                [20, 13, 50, 85], [50, 85, 80, 13]
+            ]),
+            W: () => buildLetterFromSegments([
+                [16, 13, 32, 85], [32, 85, 50, 45], [50, 45, 68, 85], [68, 85, 84, 13]
+            ]),
+            X: () => buildLetterFromSegments([
+                [22, 13, 78, 85], [78, 13, 22, 85]
+            ]),
+            Y: () => buildLetterFromSegments([
+                [20, 13, 50, 50], [80, 13, 50, 50], [50, 50, 50, 85]
+            ]),
+            Z: () => buildLetterFromSegments([
+                [22, 13, 78, 13], [78, 13, 22, 85], [22, 85, 78, 85]
+            ])
         };
-        await butterfliesRef.child(pbEditingId).set(merged);
-      } else {
-        const id = butterfliesRef.push().key;
-        await butterfliesRef.child(id).set({
-          left: pbPending.left,
-          right: pbPending.right,
-          size: pbPendingSize,
-          order: Date.now()
+
+        const wordLetters = [];
+        let wordIndex = 0;
+
+        const flowerPositions = [];
+        let currentX = window.innerWidth / 2;
+        let currentY = window.innerHeight / 2;
+        
+        let flightTimeout = null;
+        let drinkTimeout = null;
+        let flightDuration = 1.5;
+
+        const isCompact = window.innerWidth < 480;
+        const FLOWER_MARGIN = isCompact ? 22 : 30;
+        const TOP_SAFE = isCompact ? 85 : 100;
+        const BOTTOM_SAFE = isCompact ? 80 : 90;
+
+        // Flower Size Control
+        const flowerSizeInput = document.getElementById('flowerSizeInput');
+        const decreaseFlowerSizeBtn = document.getElementById('decreaseFlowerSizeBtn');
+        const increaseFlowerSizeBtn = document.getElementById('increaseFlowerSizeBtn');
+        const DEFAULT_FLOWER_SIZE = 24;
+        const MIN_FLOWER_SIZE = 14;
+        const MAX_FLOWER_SIZE = 35;
+        let currentFlowerSize = parseInt(safeStorage.getItem('rahima_garden_flowerSize')) || DEFAULT_FLOWER_SIZE;
+
+        function applyFlowerSize(size) {
+            currentFlowerSize = Math.min(MAX_FLOWER_SIZE, Math.max(MIN_FLOWER_SIZE, parseInt(size) || DEFAULT_FLOWER_SIZE));
+            document.documentElement.style.setProperty('--flower-size', currentFlowerSize + 'px');
+            flowerSizeInput.value = currentFlowerSize;
+            safeStorage.setItem('rahima_garden_flowerSize', currentFlowerSize);
+        }
+
+        function applyFlowerSizeAndReflow(size) {
+            applyFlowerSize(size);
+            if (wordLetters.length) renderLetterGrid(wordLetters[wordIndex] || 'R');
+        }
+
+        decreaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSizeAndReflow(currentFlowerSize - 2));
+        increaseFlowerSizeBtn.addEventListener('click', () => applyFlowerSizeAndReflow(currentFlowerSize + 2));
+        flowerSizeInput.addEventListener('change', () => applyFlowerSizeAndReflow(flowerSizeInput.value));
+
+        applyFlowerSize(currentFlowerSize);
+
+        function renderLetterGrid(letterChar) {
+            flowerPositions.forEach(f => f.element.remove());
+            flowerPositions.length = 0;
+
+            const builder = LETTER_BUILDERS[letterChar];
+            let grid = builder ? builder() : perfectRGrid;
+
+            // As flowers get bigger, thin the grid out so neighboring flowers
+            // keep a real gap between them instead of stacking on top of each
+            // other. The thinning grows gradually with size, one flower-size
+            // step at a time, instead of jumping straight from tight to sparse.
+            const sizeRatio = currentFlowerSize / DEFAULT_FLOWER_SIZE;
+            const stride = Math.max(1, Math.round(sizeRatio));
+            if (stride > 1) {
+                grid = grid.filter((_, idx) => idx % stride === 0);
+            }
+
+            grid.forEach((pos) => {
+                const flowerEl = document.createElement('div');
+                flowerEl.className = 'flower';
+                flowerEl.innerText = flowersPool[Math.floor(Math.random() * flowersPool.length)];
+                flowerEl.style.animationDelay = (pos.delay || 0) + 's';
+
+                let fx = Math.floor((pos.x / 100) * window.innerWidth);
+                let fy = Math.floor((pos.y / 100) * window.innerHeight);
+
+                fx = Math.min(Math.max(fx, FLOWER_MARGIN), window.innerWidth - FLOWER_MARGIN);
+                fy = Math.min(Math.max(fy, TOP_SAFE), window.innerHeight - BOTTOM_SAFE);
+
+                flowerEl.style.left = fx + 'px';
+                flowerEl.style.top = fy + 'px';
+                document.body.appendChild(flowerEl);
+
+                const positionObj = { x: fx, y: fy, element: flowerEl };
+                flowerPositions.push(positionObj);
+
+                const handleInteraction = (e) => {
+                    if (e.type === 'touchstart') {
+                        e.stopPropagation();
+                        // Mark that this touch started on a flower so swipe ignores it
+                        window._touchOnFlower = true;
+                    }
+                    createRipple(fx, fy);
+                    triggerJuiceAndFly(positionObj);
+                };
+                flowerEl.addEventListener('click', handleInteraction);
+                flowerEl.addEventListener('touchstart', handleInteraction, { passive: true });
+            });
+        }
+
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'click-ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.width = '70px';
+            ripple.style.height = '70px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 650);
+        }
+
+        function spawnDreamBubble(x, y) {
+            const dream = document.createElement('div');
+            dream.className = 'dream-bubble';
+            dream.textContent = '💤';
+            dream.style.left = x + 'px';
+            dream.style.top = (y - 22) + 'px';
+            document.body.appendChild(dream);
+            setTimeout(() => dream.remove(), 1700);
+        }
+
+        function triggerJuiceAndFly(targetPoint) {
+            clearTimeout(flightTimeout);
+            clearTimeout(drinkTimeout);
+
+            const currentComputedStyle = window.getComputedStyle(butterfly);
+            currentX = parseFloat(currentComputedStyle.left);
+            currentY = parseFloat(currentComputedStyle.top);
+
+            const splashContainer = document.createElement('div');
+            splashContainer.className = 'juice-splash';
+            splashContainer.style.left = targetPoint.x + 'px';
+            splashContainer.style.top = targetPoint.y + 'px';
+
+            const numDrops = 9;
+            for (let i = 0; i < numDrops; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'liquid-drop';
+                
+                const angle = (i / numDrops) * 2 * Math.PI + (Math.random() * 0.3);
+                const distance = 35 + Math.random() * 45;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance + 20;
+                
+                drop.style.setProperty('--tx', tx + 'px');
+                drop.style.setProperty('--ty', ty + 'px');
+                
+                const size = 6 + Math.random() * 10;
+                drop.style.width = size + 'px';
+                drop.style.height = size + 'px';
+                
+                splashContainer.appendChild(drop);
+            }
+
+            document.body.appendChild(splashContainer);
+            setTimeout(() => splashContainer.remove(), 900);
+
+            spawnDreamBubble(targetPoint.x, targetPoint.y);
+
+            targetPoint.element.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            setTimeout(() => {
+                targetPoint.element.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 320);
+
+            startFlight(targetPoint);
+        }
+
+        function startFlight(targetPoint) {
+            butterfly.classList.remove('drinking');
+
+            const halfW = butterfly.offsetWidth / 2;
+            const halfH = butterfly.offsetHeight / 2;
+            const nextX = targetPoint.x - halfW;
+            const nextY = targetPoint.y - halfH;
+
+            const deltaX = nextX - currentX;
+            const deltaY = nextY - currentY;
+
+            const angleRadians = Math.atan2(deltaY, deltaX);
+            let angleDegrees = angleRadians * (180 / Math.PI) + 90;
+
+            butterfly.style.transition = `left ${flightDuration}s cubic-bezier(0.35, 0, 0.25, 1), top ${flightDuration}s cubic-bezier(0.35, 0, 0.25, 1), transform 0.4s ease-out`;
+            butterfly.style.transform = `rotate(${angleDegrees}deg)`;
+            butterfly.style.left = nextX + 'px';
+            butterfly.style.top = nextY + 'px';
+
+            currentX = nextX;
+            currentY = nextY;
+
+            flightTimeout = setTimeout(() => {
+                butterfly.classList.add('drinking');
+                drinkTimeout = setTimeout(() => {
+                    chooseNextSequenceRoute();
+                }, 1200); 
+            }, flightDuration * 1000); 
+        }
+
+        function chooseNextSequenceRoute() {
+            if (flowerPositions.length === 0) return;
+            const randomFlower = flowerPositions[Math.floor(Math.random() * flowerPositions.length)];
+            
+            const currentComputedStyle = window.getComputedStyle(butterfly);
+            currentX = parseFloat(currentComputedStyle.left);
+            currentY = parseFloat(currentComputedStyle.top);
+
+            startFlight(randomFlower);
+        }
+
+        // Header Menu Dropdown Logic
+        const topMenuDropdown = document.getElementById('topMenuDropdown');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+        function toggleDropdownMenu() {
+            topMenuDropdown.classList.toggle('open');
+        }
+
+        function closeDropdownMenu() {
+            topMenuDropdown.classList.remove('open');
+        }
+
+        menuToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdownMenu();
         });
-      }
-    } catch (err) {}
-    pbApplyBtn.disabled = false;
-    closeModify();
-  });
 
-  function renderPbList() {
-    const list = pbOrderedList();
-    pbListEl.innerHTML = '';
-    if (!list.length) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'text-align:center;color:#00838f;padding:30px 10px;font-family:Poppins,sans-serif;font-size:13px;opacity:0.75;';
-      empty.textContent = 'No butterflies yet — tap + ADD BUTTERFLY';
-      pbListEl.appendChild(empty);
-      return;
-    }
-    list.forEach((entry, idx) => {
-      const row = document.createElement('div');
-      row.className = 'pb-row';
+        closeMenuBtn.addEventListener('click', closeDropdownMenu);
 
-      const thumb = document.createElement('div');
-      thumb.className = 'pb-row-thumb';
-      thumb.innerHTML = entry.left ? `<img src="${entry.left}" alt="butterfly">` : '🦋';
+        document.addEventListener('click', (e) => {
+            if (!topMenuDropdown.contains(e.target) && !menuToggleBtn.contains(e.target)) {
+                closeDropdownMenu();
+            }
+        });
 
-      const label = document.createElement('span');
-      label.className = 'pb-row-label';
-      label.textContent = 'Butterfly ' + (idx + 1);
+        // Background Color Picker (20 solid colors, no gradients)
+        const themes = [
+            { name: 'Rose Pink',    swatch: '#ff6b8b' },
+            { name: 'Blue',         swatch: '#3b82f6' },
+            { name: 'Dark Blue',    swatch: '#1e3a8a' },
+            { name: 'Red',          swatch: '#e63950' },
+            { name: 'Green',        swatch: '#2ecc71' },
+            { name: 'Yellow',       swatch: '#ffd700' },
+            { name: 'Purple',       swatch: '#9b59b6' },
+            { name: 'Orange',       swatch: '#ff8c1a' },
+            { name: 'Teal',         swatch: '#14b8a6' },
+            { name: 'Cyan',         swatch: '#22d3ee' },
+            { name: 'Brown',        swatch: '#8b5a2b' },
+            { name: 'Gray',         swatch: '#6b7280' },
+            { name: 'Black',        swatch: '#1a1a1a' },
+            { name: 'White',        swatch: '#f0e6d2' },
+            { name: 'Lavender',     swatch: '#c9a8ff' },
+            { name: 'Magenta',      swatch: '#d946ef' },
+            { name: 'Indigo',       swatch: '#4f46e5' },
+            { name: 'Maroon',       swatch: '#7f1d1d' },
+            { name: 'Olive',        swatch: '#556b2f' },
+            { name: 'Turquoise',    swatch: '#40e0d0' }
+        ];
 
-      const editBtn = document.createElement('button');
-      editBtn.className = 'pb-row-btn';
-      editBtn.innerHTML = '✏️';
-      editBtn.onclick = () => openModify(entry);
+        let themeIndex = parseInt(safeStorage.getItem('rahima_garden_themeIndex')) || 0;
+        const bgColorBtn = document.getElementById('bgColorBtn');
+        const bgColorSwatch = document.getElementById('colorSwatchIndicator');
+        const bgColorDropdown = document.getElementById('bgColorDropdownList');
 
-      const delBtn = document.createElement('button');
-      delBtn.className = 'pb-row-btn';
-      delBtn.innerHTML = '🗑️';
-      delBtn.onclick = () => { butterfliesRef.child(entry.id).remove().catch(() => {}); };
+        function buildColorDropdown() {
+            bgColorDropdown.innerHTML = '';
+            themes.forEach((t, i) => {
+                const opt = document.createElement('button');
+                opt.type = 'button';
+                opt.className = 'color-option' + (i === themeIndex ? ' active' : '');
+                opt.style.background = t.swatch;
+                opt.title = t.name;
+                opt.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTheme(i);
+                    bgColorDropdown.classList.remove('open');
+                });
+                bgColorDropdown.appendChild(opt);
+            });
+        }
 
-      row.appendChild(thumb);
-      row.appendChild(label);
-      row.appendChild(editBtn);
-      row.appendChild(delBtn);
-      pbListEl.appendChild(row);
-    });
-  }
+        function darkenColor(hex, amount) {
+            // amount: 0.0 = no change, 1.0 = full black
+            let r = parseInt(hex.slice(1,3), 16);
+            let g = parseInt(hex.slice(3,5), 16);
+            let b = parseInt(hex.slice(5,7), 16);
+            r = Math.round(r * (1 - amount));
+            g = Math.round(g * (1 - amount));
+            b = Math.round(b * (1 - amount));
+            return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+        }
 
-  pbSettingsBtn.addEventListener('click', () => {
-    renderPbList();
-    pbListOverlay.classList.add('show');
-  });
-  pbListClose.addEventListener('click', () => pbListOverlay.classList.remove('show'));
-  pbAddBtn.addEventListener('click', () => openModify(null));
+        function applyTheme(i) {
+            themeIndex = i;
+            document.body.style.backgroundImage = 'none';
+            document.body.style.backgroundColor = themes[i].swatch;
+            document.documentElement.style.backgroundColor = themes[i].swatch;
+            bgColorSwatch.style.background = themes[i].swatch;
 
-  // ---- Flying photo-butterflies on the home screen ----
-  const pbInstances = {};
+            safeStorage.setItem('rahima_garden_themeIndex', i);
+            showToast('✨ ' + themes[i].name + ' ✨');
+            buildColorDropdown();
+        }
 
-  function randomPoint() {
-    const margin = 44;
-    const w = window.innerWidth, h = window.innerHeight;
-    return {
-      x: margin + Math.random() * Math.max(1, w - margin * 2),
-      y: margin + Math.random() * Math.max(1, h - margin * 2)
-    };
-  }
+        bgColorBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            bgColorDropdown.classList.toggle('open');
+        });
 
-  // Butterflies emerge from just under the header, then disperse into the
-  // rest of the home screen on their first flight leg.
-  function headerSpawnPoint() {
-    const w = window.innerWidth;
-    return { x: 24 + Math.random() * Math.max(1, w - 48), y: 22 + Math.random() * 34 };
-  }
+        document.addEventListener('click', (e) => {
+            if (!bgColorDropdown.contains(e.target) && !bgColorBtn.contains(e.target)) {
+                bgColorDropdown.classList.remove('open');
+            }
+        });
 
-  function wingHtml(dataUrl) {
-    return dataUrl ? `<img src="${dataUrl}" class="pb-wing-photo" alt="wing">` : '🦋';
-  }
+        buildColorDropdown();
 
-  function createFlyingEl(entry) {
-    const el = document.createElement('div');
-    el.className = 'pb-flying';
-    el.style.setProperty('--pb-size', (entry.size || DEFAULT_SIZE) + 'px');
-    const startPt = headerSpawnPoint();
-    el.style.left = startPt.x + 'px';
-    el.style.top = startPt.y + 'px';
-    el.innerHTML =
-      '<div class="pb-wing-layer">' +
-        '<div class="pb-wing pb-left">' + wingHtml(entry.left) + '</div>' +
-        '<div class="pb-wing pb-right">' + wingHtml(entry.right) + '</div>' +
-      '</div>';
-    // Randomize each butterfly's own flap speed/offset so a whole flock
-    // never flutters in perfect unison — real butterflies don't sync up.
-    const flapDur = (0.26 + Math.random() * 0.16).toFixed(2) + 's';
-    const leftWing = el.querySelector('.pb-left');
-    const rightWing = el.querySelector('.pb-right');
-    leftWing.style.setProperty('--flap-dur', flapDur);
-    leftWing.style.animationDelay = (-Math.random() * 0.4).toFixed(2) + 's';
-    rightWing.style.setProperty('--flap-dur', flapDur);
-    rightWing.style.animationDelay = (-Math.random() * 0.4).toFixed(2) + 's';
-    pbFlyingLayer.appendChild(el);
-    return el;
-  }
+        const modal = document.getElementById('infoModal');
+        let modalTimeout = null;
 
-  function flyLoop(id) {
-    const inst = pbInstances[id];
-    if (!inst) return;
-    const el = inst.el;
-    const pt = randomPoint();
-    const curLeft = parseFloat(el.style.left) || 0;
-    const curTop  = parseFloat(el.style.top)  || 0;
-    const dx = pt.x - curLeft, dy = pt.y - curTop;
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-    const dist = Math.hypot(dx, dy);
-    const speedFactor = Math.max(0.08, Math.min(2.5, pbSpeedValue / 10));
-    const duration = Math.max(0.6, Math.min(20, (dist / 90) / speedFactor));
-    el.style.transition = `left ${duration}s cubic-bezier(0.35,0,0.25,1), top ${duration}s cubic-bezier(0.35,0,0.25,1), transform 0.4s ease-out`;
-    el.style.transform = `rotate(${angle}deg)`;
-    el.style.left = pt.x + 'px';
-    el.style.top = pt.y + 'px';
-    inst.timeout = setTimeout(() => flyLoop(id), duration * 1000 + 700 + Math.random() * 900);
-  }
+        function showToast(text, duration) {
+            clearTimeout(modalTimeout);
+            modal.textContent = text;
+            modal.classList.add('show');
+            modalTimeout = setTimeout(() => modal.classList.remove('show'), duration || 1800);
+        }
 
-  function syncFlyingButterflies() {
-    const list = pbOrderedList();
-    const currentIds = new Set(list.map(b => b.id));
-    Object.keys(pbInstances).forEach((id) => {
-      if (!currentIds.has(id)) {
-        clearTimeout(pbInstances[id].timeout);
-        pbInstances[id].el.remove();
-        delete pbInstances[id];
-      }
-    });
-    list.forEach((entry, idx) => {
-      if (!pbInstances[entry.id]) {
-        const el = createFlyingEl(entry);
-        pbInstances[entry.id] = { el, timeout: null };
-        setTimeout(() => flyLoop(entry.id), 80 + idx * 120);
-      } else {
-        const inst = pbInstances[entry.id];
-        inst.el.style.setProperty('--pb-size', (entry.size || DEFAULT_SIZE) + 'px');
-        inst.el.querySelector('.pb-left').innerHTML = wingHtml(entry.left);
-        inst.el.querySelector('.pb-right').innerHTML = wingHtml(entry.right);
-      }
-    });
-  }
+        // Background Darkness Control - declare early so applyTheme can use currentDarkness
+        const bgDarknessOverlay = document.getElementById('bgDarknessOverlay');
+        const darknessSlider = document.getElementById('darknessSlider');
+        const darknessValueLabel = document.getElementById('darknessValueLabel');
+        const DEFAULT_DARKNESS = 0;
+        let currentDarkness = parseInt(safeStorage.getItem('rahima_garden_darkness'));
+        if (isNaN(currentDarkness)) currentDarkness = DEFAULT_DARKNESS;
 
-  // ---- Speed controller: synced through Firebase so both devices always
-  // fly at the same, shared speed ----
-  function applySpeedUI(val) {
-    pbSpeedValue = Math.max(1, Math.min(20, parseInt(val) || 10));
-    if (pbSpeedSlider.value != pbSpeedValue) pbSpeedSlider.value = pbSpeedValue;
-  }
-  const cachedSpeed = loadCache(SPEED_CACHE_KEY);
-  if (cachedSpeed) applySpeedUI(cachedSpeed);
-  pbSpeedSlider.addEventListener('input', () => {
-    applySpeedUI(pbSpeedSlider.value);
-    saveCache(SPEED_CACHE_KEY, pbSpeedValue);
-    speedRef.set(pbSpeedValue).catch(() => {});
-  });
-  speedRef.on('value', (snap) => {
-    const v = snap.val();
-    if (v == null) return;
-    applySpeedUI(v);
-    saveCache(SPEED_CACHE_KEY, pbSpeedValue);
-  });
+        applyTheme(themeIndex);
 
-  // ---- Firebase real-time sync: every device (yours + your friend's) sees
-  // the same butterfly list and the same animated butterflies live.
-  // A local cache is rendered first so butterflies appear instantly when
-  // the app opens, instead of waiting on the network round-trip. ----
-  const cachedButterflies = loadCache(CACHE_KEY);
-  if (cachedButterflies) {
-    pbButterflies = cachedButterflies;
-    renderPbList();
-    syncFlyingButterflies();
-  }
+        function applyDarkness(val) {
+            currentDarkness = Math.min(90, Math.max(0, parseInt(val) || 0));
+            bgDarknessOverlay.style.opacity = (currentDarkness / 100).toFixed(2);
+            darknessSlider.value = currentDarkness;
+            darknessValueLabel.textContent = currentDarkness + '%';
+            safeStorage.setItem('rahima_garden_darkness', currentDarkness);
+        }
 
-  butterfliesRef.once('value', (snap) => {
-    pbButterflies = snap.val() || {};
-    saveCache(CACHE_KEY, pbButterflies);
-    renderPbList();
-    syncFlyingButterflies();
+        darknessSlider.addEventListener('input', () => applyDarkness(darknessSlider.value));
+        applyDarkness(currentDarkness);
 
-    butterfliesRef.on('child_added', (s) => {
-      if (pbButterflies[s.key]) return;
-      pbButterflies[s.key] = s.val();
-      saveCache(CACHE_KEY, pbButterflies);
-      if (pbListOverlay.classList.contains('show')) renderPbList();
-      syncFlyingButterflies();
-    });
-    butterfliesRef.on('child_changed', (s) => {
-      pbButterflies[s.key] = s.val();
-      saveCache(CACHE_KEY, pbButterflies);
-      if (pbListOverlay.classList.contains('show')) renderPbList();
-      syncFlyingButterflies();
-    });
-    butterfliesRef.on('child_removed', (s) => {
-      delete pbButterflies[s.key];
-      saveCache(CACHE_KEY, pbButterflies);
-      if (pbListOverlay.classList.contains('show')) renderPbList();
-      syncFlyingButterflies();
-    });
-  });
-})();
-</script>
+        document.getElementById('speedUp').addEventListener('click', () => {
+            if (flightDuration === 1.5) {
+                flightDuration = 0.8;
+                document.getElementById('speedUp').innerText = '⚡ Speed: Fast';
+            } else if (flightDuration === 0.8) {
+                flightDuration = 2.3;
+                document.getElementById('speedUp').innerText = '🐢 Speed: Calm';
+            } else {
+                flightDuration = 1.5;
+                document.getElementById('speedUp').innerText = '⚡ Flight Speed';
+            }
+            closeDropdownMenu();
+        });
+
+        document.getElementById('shuffleFlowers').addEventListener('click', () => {
+            flowerPositions.forEach(f => {
+                f.element.innerText = flowersPool[Math.floor(Math.random() * flowersPool.length)];
+                f.element.style.transform = 'translate(-50%, -50%) scale(1.25)';
+                setTimeout(() => {
+                    f.element.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 300);
+            });
+            closeDropdownMenu();
+        });
+
+        // ── Word Layout System ──
+        const VALID_LETTERS = new Set(Object.keys(LETTER_BUILDERS));
+
+        function loadWordList() {
+            try {
+                const raw = safeStorage.getItem('rahima_garden_wordList');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length) return parsed;
+                }
+            } catch(e) {}
+            return ['R','A','H','I','M','A'];
+        }
+
+        function saveWordList(list) {
+            const raw = JSON.stringify(list);
+            safeStorage.setItem('rahima_garden_wordList', raw);
+            durableDB.set('rahima_garden_wordList', raw);
+        }
+
+        let customWordList = loadWordList();
+        let activeWordIdx  = 0;
+
+        // Recover from the durable backup if it holds a list localStorage
+        // doesn't have (e.g. localStorage was reset by the WebView between
+        // app launches but IndexedDB survived).
+        (async function recoverWordListFromDurableStore() {
+            const rec = await durableDB.get('rahima_garden_wordList');
+            if (!rec || !rec.value) return;
+            try {
+                const parsed = JSON.parse(rec.value);
+                if (!Array.isArray(parsed) || !parsed.length) return;
+                const currentRaw = safeStorage.getItem('rahima_garden_wordList');
+                const sameAsCurrent = currentRaw === rec.value;
+                if (sameAsCurrent) return;
+                // Prefer the durable copy — it's the one more likely to have
+                // survived a restart intact.
+                customWordList = parsed;
+                safeStorage.setItem('rahima_garden_wordList', rec.value);
+                switchToWord(0);
+                if (document.getElementById('wordLayoutOverlay').style.display === 'flex') {
+                    renderWordLayoutList();
+                }
+            } catch (e) {}
+        })();
+
+        function getLettersForWord(word) {
+            return word.toUpperCase().split('').filter(c => VALID_LETTERS.has(c));
+        }
+
+        // ── Letter Tabs Bar ──
+        function renderLetterTabs() {
+            const bar = document.getElementById('letterTabsBar');
+            if (!bar) return;
+            bar.innerHTML = '';
+            customWordList.forEach((letter, li) => {
+                const tab = document.createElement('div');
+                tab.className = 'letter-tab' + (li === wordIndex ? ' active' : '');
+                const lSpan = document.createElement('span');
+                lSpan.className = 'tab-letter';
+                lSpan.textContent = letter;
+                tab.appendChild(lSpan);
+                tab.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
+                tab.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    wordIndex = li;
+                    renderLetterGrid(customWordList[li]);
+                    renderLetterTabs();
+                });
+                bar.appendChild(tab);
+            });
+            const activeTab = bar.querySelector('.active');
+            if (activeTab) {
+                try { activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch(e) {}
+            }
+        }
+
+        function switchToWord(idx) {
+            wordIndex = Math.min(idx, customWordList.length - 1);
+            wordLetters.length = 0;
+            customWordList.forEach(l => wordLetters.push(l));
+            renderLetterGrid(customWordList[wordIndex] || 'R');
+            renderLetterTabs();
+        }
+
+        function goNextLetter() {
+            if (!customWordList.length) return;
+            wordIndex = (wordIndex + 1) % customWordList.length;
+            wordLetters.length = 0;
+            customWordList.forEach(l => wordLetters.push(l));
+            renderLetterGrid(customWordList[wordIndex]);
+            renderLetterTabs();
+            showToast('✨ ' + customWordList[wordIndex] + ' ✨', 1400);
+        }
+
+        function goPrevLetter() {
+            if (!customWordList.length) return;
+            wordIndex = (wordIndex - 1 + customWordList.length) % customWordList.length;
+            wordLetters.length = 0;
+            customWordList.forEach(l => wordLetters.push(l));
+            renderLetterGrid(customWordList[wordIndex]);
+            renderLetterTabs();
+            showToast('✨ ' + customWordList[wordIndex] + ' ✨', 1400);
+        }
+
+        // init — must be after renderLetterGrid is defined
+        switchToWord(0);
+
+        // document.getElementById('changeWord').addEventListener('click', () => {
+        //     goNextLetter();
+        //     closeDropdownMenu();
+        // });
+
+        // ── Word Layout Overlay ──
+        const wordLayoutOverlay = document.getElementById('wordLayoutOverlay');
+        const wordLayoutInput   = document.getElementById('wordLayoutInput');
+        const wordLayoutAddBtn  = document.getElementById('wordLayoutAddBtn');
+        const wordLayoutList    = document.getElementById('wordLayoutList');
+
+        function renderWordLayoutList() {
+            wordLayoutList.innerHTML = '';
+            customWordList.forEach((letter, idx) => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #00bcd4;border-radius:14px;padding:14px 16px;';
+
+                const span = document.createElement('span');
+                span.style.cssText = 'flex:1;font-family:"Plus Jakarta Sans",sans-serif;font-size:18px;font-weight:700;color:#00838f;';
+                span.textContent = letter;
+
+                const editBtn = document.createElement('button');
+                editBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0;';
+                editBtn.innerHTML = '✏️';
+                editBtn.onclick = () => {
+                    const inp = document.createElement('input');
+                    inp.type = 'text';
+                    inp.value = letter;
+                    inp.maxLength = 1;
+                    inp.style.cssText = 'flex:1;border:2px solid #00bcd4;border-radius:8px;padding:6px 10px;font-size:18px;font-weight:700;text-align:center;font-family:"Plus Jakarta Sans",sans-serif;outline:none;color:#333;background:#fff;user-select:text;-webkit-user-select:text;min-width:0;width:50px;';
+                    const saveBtn = document.createElement('button');
+                    saveBtn.style.cssText = 'background:#00bcd4;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;';
+                    saveBtn.textContent = '✔';
+                    saveBtn.onclick = () => {
+                        const ch = inp.value.trim().toUpperCase().replace(/[^A-Z]/g, '').charAt(0);
+                        if (!ch || !VALID_LETTERS.has(ch)) { showToast('⚠️ Enter a valid letter A-Z!'); return; }
+                        customWordList[idx] = ch;
+                        saveWordList(customWordList);
+                        switchToWord(wordIndex);
+                        renderWordLayoutList();
+                    };
+                    row.innerHTML = '';
+                    row.style.cssText = 'display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #00bcd4;border-radius:14px;padding:10px 12px;';
+                    row.appendChild(inp);
+                    row.appendChild(saveBtn);
+                    setTimeout(() => { inp.focus(); inp.select(); }, 50);
+                };
+
+                const delBtn = document.createElement('button');
+                delBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0;';
+                delBtn.innerHTML = '🗑️';
+                delBtn.onclick = () => {
+                    if (customWordList.length <= 1) { showToast('⚠️ At least 1 letter needed!'); return; }
+                    customWordList.splice(idx, 1);
+                    saveWordList(customWordList);
+                    if (wordIndex >= customWordList.length) wordIndex = customWordList.length - 1;
+                    switchToWord(wordIndex);
+                    renderWordLayoutList();
+                };
+
+                row.appendChild(span);
+                row.appendChild(editBtn);
+                row.appendChild(delBtn);
+                wordLayoutList.appendChild(row);
+            });
+        }
+
+        wordLayoutAddBtn.addEventListener('click', () => {
+            const ch = wordLayoutInput.value.trim().toUpperCase().replace(/[^A-Z]/g, '').charAt(0);
+            if (!ch) { showToast('⚠️ Enter a single letter A-Z!'); return; }
+            if (!VALID_LETTERS.has(ch)) { showToast('⚠️ Letter ' + ch + ' not supported!'); return; }
+            customWordList.push(ch);
+            saveWordList(customWordList);
+            wordLayoutInput.value = '';
+            wordIndex = customWordList.length - 1;
+            switchToWord(wordIndex);
+            renderWordLayoutList();
+            showToast('✅ ' + ch + ' added!');
+        });
+
+        wordLayoutInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') wordLayoutAddBtn.click();
+        });
+
+        document.getElementById('wordLayoutBtn').addEventListener('click', () => {
+            renderWordLayoutList();
+            document.getElementById('wordLayoutOverlay').style.display = 'flex';
+            closeDropdownMenu();
+        });
+
+        document.getElementById('wordLayoutClose').addEventListener('click', () => {
+            document.getElementById('wordLayoutOverlay').style.display = 'none';
+        });
+
+        // Swipe left = next letter, swipe right = previous letter
+        (function setupSwipe() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            const SWIPE_THRESHOLD = 50;
+            const VERTICAL_LIMIT  = 80;
+
+            document.addEventListener('touchstart', (e) => {
+                if (!e.target.classList.contains('flower')) {
+                    window._touchOnFlower = false;
+                }
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                if (window._touchOnFlower) { window._touchOnFlower = false; return; }
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+                if (Math.abs(dy) > VERTICAL_LIMIT) return;
+                const menuOpen    = document.getElementById('topMenuDropdown').classList.contains('open');
+                const overlayOpen = document.getElementById('authOverlay').classList.contains('show');
+                const loveOpen    = document.getElementById('loveOverlay').classList.contains('show');
+                const wingOpen    = document.getElementById('wingUploadOverlay').classList.contains('show');
+                const layoutOpen  = document.getElementById('wordLayoutOverlay').style.display === 'flex';
+                if (menuOpen || overlayOpen || loveOpen || wingOpen || layoutOpen) return;
+                if (dx < 0) goNextLetter();
+                else        goPrevLetter();
+            }, { passive: true });
+        })();
+
+        function celebrateBurst() {
+            const pieces = ['💖', '💗', '✨', '🌸', '💐', '🌷'];
+            const count = 26;
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti-piece';
+                el.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+                el.style.left = Math.random() * 100 + 'vw';
+                const duration = 2.4 + Math.random() * 1.8;
+                el.style.animationDuration = duration + 's';
+                el.style.animationDelay = (Math.random() * 0.6) + 's';
+                el.style.fontSize = (16 + Math.random() * 14) + 'px';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), (duration + 0.6) * 1000);
+            }
+            showToast('💖 Celebrating Rahima 💖', 1800);
+        }
+        document.getElementById('celebrateBtn').addEventListener('click', () => {
+            celebrateBurst();
+            closeDropdownMenu();
+        });
+
+        const loveOverlay = document.getElementById('loveOverlay');
+        document.getElementById('loveNote').addEventListener('click', () => {
+            loveOverlay.classList.add('show');
+            closeDropdownMenu();
+        });
+        document.getElementById('closeLove').addEventListener('click', () => {
+            loveOverlay.classList.remove('show');
+        });
+        loveOverlay.addEventListener('click', (e) => {
+            if (e.target === loveOverlay) loveOverlay.classList.remove('show');
+        });
+
+        // Password & Logout Authentication System
+        const CORRECT_PASSWORD = "rahima"; // You can change this password here anytime
+        const authOverlay = document.getElementById('authOverlay');
+        const authPasswordInput = document.getElementById('authPasswordInput');
+        const rememberMeCheckbox = document.getElementById('rememberMeCheckbox');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const authErrorMsg = document.getElementById('authErrorMsg');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        function checkAuthStatus() {
+            const isRemembered = safeStorage.getItem('rahima_garden_remember') === 'true';
+            if (!isRemembered) {
+                authOverlay.classList.add('show');
+                setTimeout(() => authPasswordInput.focus(), 100);
+            }
+        }
+
+        function handleUnlock() {
+            const enteredPass = authPasswordInput.value.trim();
+            if (enteredPass === CORRECT_PASSWORD) {
+                authErrorMsg.textContent = '';
+                if (rememberMeCheckbox.checked) {
+                    safeStorage.setItem('rahima_garden_remember', 'true');
+                } else {
+                    safeStorage.removeItem('rahima_garden_remember');
+                }
+                authOverlay.classList.remove('show');
+                authPasswordInput.value = '';
+                showToast('✨ Welcome Back ✨', 1800);
+            } else {
+                authErrorMsg.textContent = 'Incorrect Password. Try again.';
+                authPasswordInput.style.borderColor = '#ff6b8b';
+                setTimeout(() => {
+                    authPasswordInput.style.borderColor = '';
+                }, 1000);
+            }
+        }
+
+        authSubmitBtn.addEventListener('click', handleUnlock);
+        authPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleUnlock();
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            closeDropdownMenu();
+            safeStorage.removeItem('rahima_garden_remember');
+            authPasswordInput.value = '';
+            authErrorMsg.textContent = '';
+            rememberMeCheckbox.checked = true;
+            authOverlay.classList.add('show');
+            setTimeout(() => authPasswordInput.focus(), 100);
+            showToast('🔒 Logged Out', 1500);
+        });
+
+        // Wing Photo Upload System
+        const wingUploadOverlay = document.getElementById('wingUploadOverlay');
+        const uploadWingMenuBtn = document.getElementById('uploadWingMenuBtn');
+        const closeWingUpload = document.getElementById('closeWingUpload');
+        const leftWingBox = document.getElementById('leftWingBox');
+        const rightWingBox = document.getElementById('rightWingBox');
+        const leftWingInput = document.getElementById('leftWingInput');
+        const rightWingInput = document.getElementById('rightWingInput');
+        const leftWingContent = document.getElementById('leftWingContent');
+        const rightWingContent = document.getElementById('rightWingContent');
+        const applyWingBtn = document.getElementById('applyWingBtn');
+        const resetWingBtn = document.getElementById('resetWingBtn');
+        const fullButterflyBox = document.getElementById('fullButterflyBox');
+        const fullButterflyInput = document.getElementById('fullButterflyInput');
+        const fullButterflyContent = document.getElementById('fullButterflyContent');
+
+        const wingEls = {
+            left: document.querySelector('.wing.left'),
+            right: document.querySelector('.wing.right')
+        };
+
+        let pendingWingData = { left: null, right: null };
+
+        function readFileAsDataURL(file, callback) {
+            const reader = new FileReader();
+            reader.onload = () => callback(reader.result);
+            reader.readAsDataURL(file);
+        }
+
+        function applyWingImage(side, dataUrl) {
+            const wingEl = wingEls[side];
+            if (!wingEl) return;
+            wingEl.innerHTML = `<img src="${dataUrl}" class="wing-photo" alt="wing">`;
+            wingEl.classList.add('has-photo');
+        }
+
+        function resetWingImage(side) {
+            const wingEl = wingEls[side];
+            if (!wingEl) return;
+            wingEl.innerHTML = '🦋';
+            wingEl.classList.remove('has-photo');
+        }
+
+        function openWingUploadOverlay() {
+            wingUploadOverlay.classList.add('show');
+            closeDropdownMenu();
+        }
+
+        function closeWingUploadOverlay() {
+            wingUploadOverlay.classList.remove('show');
+        }
+
+        leftWingBox.addEventListener('click', () => leftWingInput.click());
+        rightWingBox.addEventListener('click', () => rightWingInput.click());
+
+        leftWingInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            readFileAsDataURL(file, (dataUrl) => {
+                pendingWingData.left = dataUrl;
+                leftWingContent.innerHTML = `<img src="${dataUrl}" class="preview-img" alt="left wing preview">`;
+            });
+        });
+
+        rightWingInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            readFileAsDataURL(file, (dataUrl) => {
+                pendingWingData.right = dataUrl;
+                rightWingContent.innerHTML = `<img src="${dataUrl}" class="preview-img" alt="right wing preview">`;
+            });
+        });
+
+        function splitFullButterflyImage(dataUrl) {
+            const img = new Image();
+            img.onload = () => {
+                const w = img.naturalWidth;
+                const h = img.naturalHeight;
+                const halfW = Math.floor(w / 2);
+
+                const leftCanvas = document.createElement('canvas');
+                leftCanvas.width = halfW;
+                leftCanvas.height = h;
+                leftCanvas.getContext('2d').drawImage(img, 0, 0, halfW, h, 0, 0, halfW, h);
+
+                const rightCanvas = document.createElement('canvas');
+                const rightW = w - halfW;
+                rightCanvas.width = rightW;
+                rightCanvas.height = h;
+                rightCanvas.getContext('2d').drawImage(img, halfW, 0, rightW, h, 0, 0, rightW, h);
+
+                const leftDataUrl = leftCanvas.toDataURL('image/png');
+                const rightDataUrl = rightCanvas.toDataURL('image/png');
+
+                pendingWingData.left = leftDataUrl;
+                pendingWingData.right = rightDataUrl;
+                leftWingContent.innerHTML = `<img src="${leftDataUrl}" class="preview-img" alt="left wing preview">`;
+                rightWingContent.innerHTML = `<img src="${rightDataUrl}" class="preview-img" alt="right wing preview">`;
+                fullButterflyContent.innerHTML = `<img src="${dataUrl}" class="full-upload-thumb" alt="full butterfly preview"> Full Image Split ✔`;
+                showToast('🦋 Wings Split From Image 🦋', 1800);
+            };
+            img.src = dataUrl;
+        }
+
+        fullButterflyBox.addEventListener('click', () => fullButterflyInput.click());
+
+        fullButterflyInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            readFileAsDataURL(file, (dataUrl) => {
+                splitFullButterflyImage(dataUrl);
+            });
+        });
+
+        applyWingBtn.addEventListener('click', () => {
+            const storedLeft = safeStorage.getItem('rahima_garden_leftWing');
+            const storedRight = safeStorage.getItem('rahima_garden_rightWing');
+
+            const finalLeft = pendingWingData.left || storedLeft || pendingWingData.right || storedRight;
+            const finalRight = pendingWingData.right || storedRight || pendingWingData.left || storedLeft;
+
+            if (finalLeft && finalRight) {
+                applyWingImage('left', finalLeft);
+                applyWingImage('right', finalRight);
+                safeStorage.setItem('rahima_garden_leftWing', finalLeft);
+                safeStorage.setItem('rahima_garden_rightWing', finalRight);
+                showToast('🦋 Wings Updated 🦋', 1800);
+            } else {
+                showToast('🦋 Size Updated 🦋', 1600);
+            }
+
+            closeWingUploadOverlay();
+        });
+
+        resetWingBtn.addEventListener('click', () => {
+            resetWingImage('left');
+            resetWingImage('right');
+            safeStorage.removeItem('rahima_garden_leftWing');
+            safeStorage.removeItem('rahima_garden_rightWing');
+            safeStorage.removeItem('rahima_garden_wingSize');
+            applyWingSize(DEFAULT_WING_SIZE);
+            pendingWingData = { left: null, right: null };
+            leftWingContent.innerHTML = '➕';
+            rightWingContent.innerHTML = '➕';
+            fullButterflyContent.innerHTML = '🖼️ Upload Full Butterfly Image';
+            fullButterflyInput.value = '';
+            showToast('🦋 Default Wings Restored 🦋', 1600);
+            closeWingUploadOverlay();
+        });
+
+        uploadWingMenuBtn.addEventListener('click', openWingUploadOverlay);
+        closeWingUpload.addEventListener('click', closeWingUploadOverlay);
+        wingUploadOverlay.addEventListener('click', (e) => {
+            if (e.target === wingUploadOverlay) closeWingUploadOverlay();
+        });
+
+        // Butterfly Size Control
+        const wingSizeInput = document.getElementById('wingSizeInput');
+        const decreaseSizeBtn = document.getElementById('decreaseSizeBtn');
+        const increaseSizeBtn = document.getElementById('increaseSizeBtn');
+        const DEFAULT_WING_SIZE = 42;
+        const MIN_WING_SIZE = 20;
+        const MAX_WING_SIZE = 90;
+        let currentWingSize = parseInt(safeStorage.getItem('rahima_garden_wingSize')) || DEFAULT_WING_SIZE;
+
+        function applyWingSize(size) {
+            currentWingSize = Math.min(MAX_WING_SIZE, Math.max(MIN_WING_SIZE, parseInt(size) || DEFAULT_WING_SIZE));
+            document.documentElement.style.setProperty('--wing-size', currentWingSize + 'px');
+            wingSizeInput.value = currentWingSize;
+            safeStorage.setItem('rahima_garden_wingSize', currentWingSize);
+        }
+
+        decreaseSizeBtn.addEventListener('click', () => applyWingSize(currentWingSize - 2));
+        increaseSizeBtn.addEventListener('click', () => applyWingSize(currentWingSize + 2));
+        wingSizeInput.addEventListener('change', () => applyWingSize(wingSizeInput.value));
+
+        applyWingSize(currentWingSize);
+
+        (function restoreWings() {
+            const savedLeft = safeStorage.getItem('rahima_garden_leftWing');
+            const savedRight = safeStorage.getItem('rahima_garden_rightWing');
+            if (savedLeft) {
+                applyWingImage('left', savedLeft);
+                leftWingContent.innerHTML = `<img src="${savedLeft}" class="preview-img" alt="left wing preview">`;
+            }
+            if (savedRight) {
+                applyWingImage('right', savedRight);
+                rightWingContent.innerHTML = `<img src="${savedRight}" class="preview-img" alt="right wing preview">`;
+            }
+        })();
+
+        // ── Balloon Animation ──
+        function launchBalloons() {
+            const colors = ['❤️','🧡','💛','💚','💙','💜','🩷'];
+            const layer = document.createElement('div');
+            layer.className = 'balloon-layer';
+            document.body.appendChild(layer);
+
+            colors.forEach((emoji, i) => {
+                const leftPct = 6 + (i * 13) + (Math.random() * 5 - 2.5);
+                const duration = 6.5 + Math.random() * 2;
+                const delay    = 0.3 + i * 0.28 + Math.random() * 0.15;
+                const swayPx   = (Math.random() * 50 - 25);
+                const swayDur  = (1.8 + Math.random() * 1.2) + 's';
+
+                const wrap = document.createElement('div');
+                wrap.className = 'balloon-wrap';
+                wrap.style.left = leftPct + '%';
+                wrap.style.bottom = '-220px';
+                wrap.style.animationDuration = duration + 's';
+                wrap.style.animationDelay    = delay + 's';
+                wrap.style.animationFillMode = 'both';
+                wrap.style.setProperty('--sway', swayPx + 'px');
+
+                const heart = document.createElement('div');
+                heart.className = 'balloon-heart';
+                heart.textContent = emoji;
+                heart.style.animationDuration = swayDur;
+
+                const string = document.createElement('div');
+                string.className = 'balloon-string';
+
+                wrap.appendChild(heart);
+                wrap.appendChild(string);
+                layer.appendChild(wrap);
+            });
+
+            // Fade out entire layer after all balloons have risen
+            const maxDelay = 0.3 + 6 * 0.28 + 0.15;
+            const totalTime = (maxDelay + 8.5 + 1.5) * 1000;
+            setTimeout(() => {
+                layer.classList.add('fade-out');
+                setTimeout(() => layer.remove(), 1300);
+            }, totalTime);
+        }
+
+        // Auto-launch on page load after 2s — after loader hides
+        setTimeout(launchBalloons, 2000);
+
+        // Initialize App
+        setTimeout(() => showToast('✨ WELCOME ✨', 3200), 800);
+        setTimeout(chooseNextSequenceRoute, 1500);
+        
+        // Check initial authentication
+        checkAuthStatus();
+
+        // Hide the professional loading screen once everything is set up
+        (function hideAppLoader() {
+            const loaderEl = document.getElementById('appLoader');
+            if (!loaderEl) return;
+            const reveal = () => {
+                loaderEl.classList.add('loader-hidden');
+                setTimeout(() => loaderEl.remove(), 550);
+            };
+            // Small minimum display time avoids an abrupt flash on fast loads
+            const minDelay = new Promise(resolve => setTimeout(resolve, 450));
+            const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+            Promise.all([minDelay, fontsReady]).then(reveal).catch(reveal);
+        })();
+    </script>
 </body>
 </html>
